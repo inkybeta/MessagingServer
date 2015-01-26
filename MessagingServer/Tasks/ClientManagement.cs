@@ -79,8 +79,10 @@ namespace MessagingServer.Tasks
 				else
 					SendError(clientSocket, "Unable to find command (Concurrency Issues)");
 				if (Program.ServerState == 0)
+				{
 					Console.WriteLine("Thread has been ended");
 					return;
+				}
 			}
 		}
 
