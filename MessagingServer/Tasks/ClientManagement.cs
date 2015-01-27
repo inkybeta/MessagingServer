@@ -18,6 +18,11 @@ namespace MessagingServer.Tasks
 			Console.WriteLine("Thread started");
 			while (true)
 			{
+				if (Program.ServerState == 0)
+				{
+					Console.WriteLine("Thread has been ended");
+					return;
+				}
 				Socket clientSocket = Program.ServerSocket.Accept();
 				Console.WriteLine("Connection has been accepted from {0}", clientSocket.RemoteEndPoint);
 
@@ -58,6 +63,8 @@ namespace MessagingServer.Tasks
 			UserClientService client = (UserClientService) service;
 			while (true)
 			{
+				CommandParameterPair message = client.RecieveMessage();
+				
 				if (Program.ServerState == 0)
 				{
 					client.SendShutdown("The server is shutting down.");
@@ -66,9 +73,9 @@ namespace MessagingServer.Tasks
 			}
 		}
 
-		public static void ManageAnonymous(object _socket)
+		public static void ManageAnonymous(object socket)
 		{
-			Socket client = (Socket) _socket;
+			Socket client = (Socket) socket;
 			string smessage = SocketManagement.RecieveMessage(client, SocketManagement.RecieveMessageLength(client));
 			CommandParameterPair message = MessageManagement.RecieveMessage(smessage);
 			InitializeCommand execute;

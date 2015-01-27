@@ -64,7 +64,6 @@ namespace MessagingServer
 			InitializeCommands.TryAdd("INFOREQ", ServerCommandManagement.RequestInfo);
 
 			//Add possible server commands
-			
 			Console.WriteLine("What port should the server be bound to? (2015 is default)");
 			int port;
 			if (!Int32.TryParse(Console.ReadLine(), out port))
@@ -97,6 +96,7 @@ namespace MessagingServer
 				if (Console.ReadKey() == new ConsoleKeyInfo('q', ConsoleKey.Q, false, false, false))
 				{
 					ServerState = 0;
+					Console.WriteLine();
 					Console.WriteLine("Server is stopping");
 					foreach (Thread thread in AcceptThreads)
 						thread.Join();
@@ -105,6 +105,7 @@ namespace MessagingServer
 			}
 			foreach (KeyValuePair<string, Thread> thread in ClientThreads)
 			{
+				thread.Value.Abort();
 				thread.Value.Join();
 			}
 			Console.WriteLine("Server has stopped. Press any key to exit");

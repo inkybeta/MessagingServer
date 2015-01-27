@@ -18,7 +18,7 @@ namespace MessagingServerCore
 			get { return Parameters.Length; }
 		}
 
-		public CommandParameterPair(string command, string[] parameters)
+		public CommandParameterPair(string command, params string[] parameters)
 		{
 			Command = command;
 			Parameters = parameters;
