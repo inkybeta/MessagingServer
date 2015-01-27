@@ -14,7 +14,7 @@ namespace MessagingServer.Tasks
 				return null;
 			}
 			string command = messageAndValue[0];
-			if (messageAndValue.Length != 2)
+			if (messageAndValue.Length == 2)
 			{
 				string[] parameters = messageAndValue[1].Split('&');
 				for (int i = 0; i < parameters.Length; i++)

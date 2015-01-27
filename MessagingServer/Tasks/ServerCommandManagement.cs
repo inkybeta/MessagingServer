@@ -44,7 +44,7 @@ namespace MessagingServer.Tasks
 			Program.Clients.TryAdd(username, service);
 			Thread thread = new Thread(ClientManagement.ManageClient);
 			thread.Start(service);
-			Program.ClientThreads.TryAdd(username, thread);
+			Program.ClientThreads.Add(thread);
 		}
 
 		public static void RequestInfo(Socket clientSocket, params string[] value)
@@ -60,6 +60,7 @@ namespace MessagingServer.Tasks
 			clientSocket.Send(json, json.Length, SocketFlags.None);
 			Thread thread = new Thread(ClientManagement.ManageAnonymous);
 			thread.Start(clientSocket);
+			Program.UnknownThreads.Add(thread);
 		}
 	}
 }

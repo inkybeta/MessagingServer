@@ -18,41 +18,48 @@ namespace MessagingServer.Tasks
 			Console.WriteLine("Thread started");
 			while (true)
 			{
-				if (Program.ServerState == 0)
+				try
 				{
-					Console.WriteLine("Thread has been ended");
-					return;
+					if (Program.ServerState == 0)
+					{
+						Console.WriteLine("Thread has been ended");
+						return;
+					}
+					Socket clientSocket = Program.ServerSocket.Accept();
+					Console.WriteLine("Connection has been accepted from {0}", clientSocket.RemoteEndPoint);
+
+
+					int messageLength = SocketManagement.RecieveMessageLength(clientSocket);
+					string stringmessage = SocketManagement.RecieveMessage(clientSocket, messageLength);
+
+					CommandParameterPair message = MessageManagement.RecieveMessage(stringmessage);
+					if (message == null)
+					{
+						SocketManagement.SendInvalid(clientSocket, "The message was formatted incorrectly.");
+						clientSocket.Close();
+						continue;
+					}
+
+					if (!Program.InitializeCommands.ContainsKey(message.Command))
+					{
+						SocketManagement.SendInvalid(clientSocket, "The command was not found");
+						clientSocket.Close();
+						continue;
+					}
+
+					InitializeCommand execute;
+					if (Program.InitializeCommands.TryGetValue(message.Command, out execute))
+						execute(clientSocket, message.Parameters);
+					else
+						SocketManagement.SendError(clientSocket, "Unable to find command (Concurrency Issues)");
+					if (Program.ServerState == 0)
+					{
+						Console.WriteLine("Thread has been ended");
+						return;
+					}
 				}
-				Socket clientSocket = Program.ServerSocket.Accept();
-				Console.WriteLine("Connection has been accepted from {0}", clientSocket.RemoteEndPoint);
-
-
-				int messageLength = SocketManagement.RecieveMessageLength(clientSocket);
-				string stringmessage = SocketManagement.RecieveMessage(clientSocket, messageLength);
-
-				CommandParameterPair message = MessageManagement.RecieveMessage(stringmessage);
-				if (message == null)
+				catch (ThreadAbortException e)
 				{
-					SocketManagement.SendInvalid(clientSocket, "The message was formatted incorrectly.");
-					clientSocket.Close();
-					continue;
-				}
-
-				if (!Program.InitializeCommands.ContainsKey(message.Command))
-				{
-					SocketManagement.SendInvalid(clientSocket, "The command was not found");
-					clientSocket.Close();
-					continue;
-				}
-
-				InitializeCommand execute;
-				if (Program.InitializeCommands.TryGetValue(message.Command, out execute))
-					execute(clientSocket, message.Parameters);
-				else
-					SocketManagement.SendError(clientSocket, "Unable to find command (Concurrency Issues)");
-				if (Program.ServerState == 0)
-				{
-					Console.WriteLine("Thread has been ended");
 					return;
 				}
 			}

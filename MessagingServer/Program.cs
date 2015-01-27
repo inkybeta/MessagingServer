@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using MessagingServer.Tasks;
 using MessagingServerBusiness;
@@ -19,9 +20,9 @@ namespace MessagingServer
 	{
 		internal static Socket ServerSocket { get; set; }
 
-		internal static List<Thread> AcceptThreads { get; set; }
-		internal static List<Thread> UnknownThreads { get; set; } 
-		internal static ConcurrentDictionary<string, Thread> ClientThreads { get; set; } 
+		internal static ConcurrentBag<Thread> AcceptThreads { get; set; }
+		internal static ConcurrentBag<Thread> UnknownThreads { get; set; } 
+		internal static ConcurrentBag<Thread> ClientThreads { get; set; } 
 
 		internal static ConcurrentDictionary<string, string> ServerProperties { get; set; }
 		internal static ConcurrentDictionary<string, ServerCommand> ServerCommands { get; set; }
@@ -39,7 +40,9 @@ namespace MessagingServer
 			ServerCommands = new ConcurrentDictionary<string, ServerCommand>();
 			Clients = new ConcurrentDictionary<string, UserClientService>();
 			InitializeCommands = new ConcurrentDictionary<string, InitializeCommand>();
-			AcceptThreads = new List<Thread>();
+			ClientThreads = new ConcurrentBag<Thread>();
+			AcceptThreads = new ConcurrentBag<Thread>();
+			UnknownThreads = new ConcurrentBag<Thread>();
 
 			Console.WriteLine("The server is starting");
 			Console.WriteLine("Type the name of the file that holds the server properties");
@@ -99,14 +102,20 @@ namespace MessagingServer
 					Console.WriteLine();
 					Console.WriteLine("Server is stopping");
 					foreach (Thread thread in AcceptThreads)
+					{
+						byte[] bytes = Encoding.UTF8.GetBytes("INFOREQ");
+						Socket sendSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+						sendSocket.Connect(IPAddress.Loopback, 2015);
+						sendSocket.SendTo(BitConverter.GetBytes(bytes.Length), 0, 4, SocketFlags.None, new IPEndPoint(IPAddress.Loopback, 2015));
+						sendSocket.SendTo(bytes, 0, bytes.Length, SocketFlags.None, new IPEndPoint(IPAddress.Loopback, 2015));
 						thread.Join();
+					}
 					break;
 				}
 			}
-			foreach (KeyValuePair<string, Thread> thread in ClientThreads)
+			foreach (Thread thread in ClientThreads)
 			{
-				thread.Value.Abort();
-				thread.Value.Join();
+				thread.Join();
 			}
 			Console.WriteLine("Server has stopped. Press any key to exit");
 			Console.ReadKey();
