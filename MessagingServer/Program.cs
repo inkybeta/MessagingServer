@@ -1,36 +1,33 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using MessagingServer.Tasks;
 using MessagingServerBusiness;
-using MessagingServerCore;
 using Newtonsoft.Json;
 
 namespace MessagingServer
 {
 	public delegate void ServerCommand(string input);
+	public delegate void InitializeCommand(Socket clientSocket, params string[] value);
 
-	public delegate void InitializeCommand(Socket clientSocket, string value);
 	class Program
 	{
 		internal static Socket ServerSocket { get; set; }
 
 		internal static List<Thread> AcceptThreads { get; set; }
+		internal static List<Thread> UnknownThreads { get; set; } 
 		internal static ConcurrentDictionary<string, Thread> ClientThreads { get; set; } 
 
 		internal static ConcurrentDictionary<string, string> ServerProperties { get; set; }
 		internal static ConcurrentDictionary<string, ServerCommand> ServerCommands { get; set; }
 		internal static ConcurrentDictionary<string, InitializeCommand> InitializeCommands { get; set; }
 		internal static volatile int ServerState = 1;
+
 
 		internal static ConcurrentDictionary<string, UserClientService> Clients { get; set; }
 
@@ -63,8 +60,8 @@ namespace MessagingServer
 				new ConcurrentDictionary<string, string>(ServerProperties.Concat(JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(fileName))));
 
 			//Add possible init commands
-			InitializeCommands.TryAdd("CONNECT", ClientManagement.Connect);
-			InitializeCommands.TryAdd("INFOREQ", ClientManagement.RequestInfo);
+			InitializeCommands.TryAdd("CONNECT", ServerCommandManagement.Connect);
+			InitializeCommands.TryAdd("INFOREQ", ServerCommandManagement.RequestInfo);
 
 			//Add possible server commands
 			
