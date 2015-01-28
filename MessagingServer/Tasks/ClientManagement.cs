@@ -76,7 +76,15 @@ namespace MessagingServer.Tasks
 					return;
 				}
 				CommandParameterPair message = client.RecieveMessage();
-				
+				ServerCommand command;
+				if (Program.ServerCommands.TryGetValue(message.Command, out command))
+				{
+
+				}
+				else
+				{
+					client.SendInvalid();
+				}
 				if (Program.ServerState == 0)
 				{
 					client.SendShutdown("The server is shutting down.");

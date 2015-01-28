@@ -27,7 +27,7 @@ namespace MessagingServerBusiness
 		}
 
 		/// <summary>
-		/// Send a shutdown message.
+		/// Send a shutdown message. Reserved for the server
 		/// </summary>
 		/// <param name="send">The message to send</param>
 	    public void SendShutdown(string send)
@@ -38,7 +38,7 @@ namespace MessagingServerBusiness
 	    }
 
 		/// <summary>
-		/// Disconnect the client
+		/// Disconnect the client. Reserved for the server
 		/// </summary>
 		/// <param name="reason">Send the reason for disconnecting the client.</param>
 	    public void Disconnect(string reason)
@@ -48,6 +48,11 @@ namespace MessagingServerBusiness
 			CloseConnection();
 	    }
 
+	    public void SendInvalid(string message)
+	    {
+		    var pair = new CommandParameterPair("INVOP", Uri.EscapeDataString(message));
+			Send(pair);
+	    }
 		/// <summary>
 		/// Send a message to the client.
 		/// </summary>
