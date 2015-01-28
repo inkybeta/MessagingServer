@@ -21,7 +21,7 @@ namespace MessagingServer
 		internal static Socket ServerSocket { get; set; }
 
 		internal static ConcurrentBag<Thread> AcceptThreads { get; set; }
-		internal static ConcurrentBag<Thread> UnknownThreads { get; set; } 
+		internal static ConcurrentBag<Thread> AnonymousThreads { get; set; } 
 		internal static ConcurrentBag<Thread> ClientThreads { get; set; } 
 
 		internal static ConcurrentDictionary<string, string> ServerProperties { get; set; }
@@ -42,7 +42,7 @@ namespace MessagingServer
 			InitializeCommands = new ConcurrentDictionary<string, InitializeCommand>();
 			ClientThreads = new ConcurrentBag<Thread>();
 			AcceptThreads = new ConcurrentBag<Thread>();
-			UnknownThreads = new ConcurrentBag<Thread>();
+			AnonymousThreads = new ConcurrentBag<Thread>();
 
 			Console.WriteLine("The server is starting");
 			Console.WriteLine("Type the name of the file that holds the server properties");
@@ -115,6 +115,11 @@ namespace MessagingServer
 			}
 			foreach (Thread thread in ClientThreads)
 			{
+				thread.Join();
+			}
+			foreach (Thread thread in AnonymousThreads)
+			{
+				thread.Abort();
 				thread.Join();
 			}
 			Console.WriteLine("Server has stopped. Press any key to exit");

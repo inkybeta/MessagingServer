@@ -60,7 +60,7 @@ namespace MessagingServer.Tasks
 			clientSocket.Send(json, json.Length, SocketFlags.None);
 			Thread thread = new Thread(ClientManagement.ManageAnonymous);
 			thread.Start(clientSocket);
-			Program.UnknownThreads.Add(thread);
+			Program.AnonymousThreads.Add(thread);
 		}
 	}
 }

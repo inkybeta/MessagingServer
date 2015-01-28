@@ -70,6 +70,11 @@ namespace MessagingServer.Tasks
 			UserClientService client = (UserClientService) service;
 			while (true)
 			{
+				if (Program.ServerState == 0)
+				{
+					client.SendShutdown("The server is shutting down.");
+					return;
+				}
 				CommandParameterPair message = client.RecieveMessage();
 				
 				if (Program.ServerState == 0)
@@ -83,6 +88,12 @@ namespace MessagingServer.Tasks
 		public static void ManageAnonymous(object socket)
 		{
 			Socket client = (Socket) socket;
+			if (Program.ServerState == 0)
+			{
+				SocketManagement.SendShutdown(client, "The server is shutting down", "0");
+				client.Close();
+				return;
+			}
 			string smessage = SocketManagement.RecieveMessage(client, SocketManagement.RecieveMessageLength(client));
 			CommandParameterPair message = MessageManagement.RecieveMessage(smessage);
 			InitializeCommand execute;

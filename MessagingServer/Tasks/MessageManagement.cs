@@ -18,7 +18,9 @@ namespace MessagingServer.Tasks
 			{
 				string[] parameters = messageAndValue[1].Split('&');
 				for (int i = 0; i < parameters.Length; i++)
+				{
 					parameters[i] = Uri.UnescapeDataString(parameters[i]);
+				}
 				return new CommandParameterPair(command, parameters);
 			}
 			return new CommandParameterPair(command, new string[0]);

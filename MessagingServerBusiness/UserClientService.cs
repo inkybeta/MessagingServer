@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MessagingServerCore;
 
@@ -24,24 +26,38 @@ namespace MessagingServerBusiness
 			Client = client;
 		}
 
+		/// <summary>
+		/// Send a shutdown message.
+		/// </summary>
+		/// <param name="send">The message to send</param>
 	    public void SendShutdown(string send)
 	    {
-		    string smessage = String.Format("SDOWN {0}&{1}", Uri.EscapeDataString(send), Uri.EscapeDataString("0"));
-		    byte[] message = Encoding.UTF8.GetBytes(smessage);
-		    Client.ClientSocket.Send(BitConverter.GetBytes(message.Length), 4, SocketFlags.None);
-		    Client.ClientSocket.Send(message, message.Length, SocketFlags.None);
+		    var pair = new CommandParameterPair("SDOWN {0}&{1}", Uri.EscapeDataString(send), "0");
+		    Send(pair);
 			CloseConnection();
 	    }
 
+		/// <summary>
+		/// Disconnect the client
+		/// </summary>
+		/// <param name="reason">Send the reason for disconnecting the client.</param>
 	    public void Disconnect(string reason)
 	    {
-		    
+		    var pair = new CommandParameterPair("DISCONN", Uri.EscapeDataString(reason));
+			Send(pair);
+			CloseConnection();
 	    }
 
+		/// <summary>
+		/// Send a message to the client.
+		/// </summary>
+		/// <param name="message">The message to send</param>
 	    public void SendMessage(string message)
-	    {
-		    
-	    }
+		{
+			var pair = new CommandParameterPair("NEWMSG", Uri.EscapeDataString(message));
+			Send(pair);
+			CloseConnection();
+		}
 
 	    public CommandParameterPair RecieveMessage()
 	    {
@@ -65,16 +81,31 @@ namespace MessagingServerBusiness
 				    int bytesRecieved = Client.ClientSocket.Receive(buffer);
 					stream.Write(buffer, 0, bytesRecieved);
 			    }
-			    return RecieveMessage(Encoding.UTF8.GetString(stream.ToArray()));
+			    return ConvertMessage(Encoding.UTF8.GetString(stream.ToArray()));
 		    }
 	    }
 
 	    private void Send(CommandParameterPair command)
 	    {
-		    
+		    if (command.ParameterLength == 0)
+		    {
+			    byte[] fullMessage = Encoding.UTF8.GetBytes(command.Command);
+			    Client.ClientSocket.Send(BitConverter.GetBytes(fullMessage.Length), 4, SocketFlags.None);
+			    Client.ClientSocket.Send(fullMessage, fullMessage.Length, SocketFlags.None);
+			    return;
+		    }
+			StringBuilder builder = new StringBuilder();
+		    foreach (string parameter in command.Parameters)
+			    builder.Append(String.Format("{0}&", parameter));
+		    string temp = builder.ToString();
+		    string parameters = temp.Substring(0, temp.Length - 1);
+		    string smessage = String.Format("{0} {1}", command.Command, parameters);
+		    byte[] byteMessage = Encoding.UTF8.GetBytes(smessage);
+		    Client.ClientSocket.Send(BitConverter.GetBytes(byteMessage.Length), 4, SocketFlags.None);
+		    Client.ClientSocket.Send(byteMessage, byteMessage.Length, SocketFlags.None);
 	    }
 
-		public CommandParameterPair RecieveMessage(string input)
+		private CommandParameterPair ConvertMessage(string input)
 		{
 			string[] messageAndValue = input.Split(' ');
 			if (messageAndValue.Length > 2)
