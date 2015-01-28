@@ -20,15 +20,17 @@ namespace MessagingServer
 	{
 		internal static Socket ServerSocket { get; set; }
 
+
+		// The bag of threads for managing clients
 		internal static ConcurrentBag<Thread> AcceptThreads { get; set; }
 		internal static ConcurrentBag<Thread> AnonymousThreads { get; set; } 
-		internal static ConcurrentBag<Thread> ClientThreads { get; set; } 
+		internal static ConcurrentBag<Thread> ClientThreads { get; set; }
 
+		// The th
 		internal static ConcurrentDictionary<string, string> ServerProperties { get; set; }
 		internal static ConcurrentDictionary<string, ServerCommand> ServerCommands { get; set; }
 		internal static ConcurrentDictionary<string, InitializeCommand> InitializeCommands { get; set; }
 		internal static volatile int ServerState = 1;
-
 
 		internal static ConcurrentDictionary<string, UserClientService> Clients { get; set; }
 
@@ -43,6 +45,7 @@ namespace MessagingServer
 			ClientThreads = new ConcurrentBag<Thread>();
 			AcceptThreads = new ConcurrentBag<Thread>();
 			AnonymousThreads = new ConcurrentBag<Thread>();
+
 
 			Console.WriteLine("The server is starting");
 			Console.WriteLine("Type the name of the file that holds the server properties");

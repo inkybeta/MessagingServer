@@ -49,9 +49,14 @@ namespace MessagingServer.Tasks
 
 					InitializeCommand execute;
 					if (Program.InitializeCommands.TryGetValue(message.Command, out execute))
+					{
 						execute(clientSocket, message.Parameters);
+						continue;
+					}
 					else
+					{
 						SocketManagement.SendError(clientSocket, "Unable to find command (Concurrency Issues)");
+					}
 					if (Program.ServerState == 0)
 					{
 						Console.WriteLine("Thread has been ended");
@@ -60,6 +65,7 @@ namespace MessagingServer.Tasks
 				}
 				catch (ThreadAbortException e)
 				{
+					Console.WriteLine("Thread has been stopped");
 					return;
 				}
 			}
@@ -76,6 +82,10 @@ namespace MessagingServer.Tasks
 					return;
 				}
 				CommandParameterPair message = client.RecieveMessage();
+				if (message == null)
+				{
+					client.SendMessage("Command was formatted incorrectly");
+				}
 				ServerCommand command;
 				if (Program.ServerCommands.TryGetValue(message.Command, out command))
 				{

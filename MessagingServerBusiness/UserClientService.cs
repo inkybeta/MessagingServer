@@ -64,6 +64,10 @@ namespace MessagingServerBusiness
 			CloseConnection();
 		}
 
+		/// <summary>
+		/// Recieve a message
+		/// </summary>
+		/// <returns></returns>
 	    public CommandParameterPair RecieveMessage()
 	    {
 		    int messageLength;
@@ -85,10 +89,20 @@ namespace MessagingServerBusiness
 				    int bytesRecieved = Client.ClientSocket.Receive(buffer);
 					stream.Write(buffer, 0, bytesRecieved);
 			    }
-			    return ConvertMessage(Encoding.UTF8.GetString(stream.ToArray()));
+			    CommandParameterPair pair = ConvertMessage(Encoding.UTF8.GetString(stream.ToArray()));
+			    if (pair == null)
+			    {
+				    SendInvalid("The command was not formatted correctly");
+				    return null;
+			    }
+			    return pair;
 		    }
 	    }
 
+		/// <summary>
+		/// Recieves the 
+		/// </summary>
+		/// <param name="command"></param>
 	    private void Send(CommandParameterPair command)
 	    {
 		    if (command.ParameterLength == 0)
@@ -117,7 +131,7 @@ namespace MessagingServerBusiness
 				return null;
 			}
 			string command = messageAndValue[0];
-			if (messageAndValue.Length != 2)
+			if (messageAndValue.Length == 2)
 			{
 				string[] parameters = messageAndValue[1].Split('&');
 				for (int i = 0; i < parameters.Length; i++)
