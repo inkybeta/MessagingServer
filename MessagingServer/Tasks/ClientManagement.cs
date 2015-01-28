@@ -79,11 +79,15 @@ namespace MessagingServer.Tasks
 				ServerCommand command;
 				if (Program.ServerCommands.TryGetValue(message.Command, out command))
 				{
-
+					string classic = command(message.Parameters);
+					if (String.IsNullOrEmpty(classic))
+					{
+						continue;
+					}
 				}
 				else
 				{
-					client.SendInvalid();
+					client.SendInvalid(String.Format("Unknown command: {0}", message.Command));
 				}
 				if (Program.ServerState == 0)
 				{

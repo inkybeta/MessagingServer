@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace MessagingServer
 {
-	public delegate void ServerCommand(string input);
+	public delegate string ServerCommand(params string[] input);
 	public delegate void InitializeCommand(Socket clientSocket, params string[] value);
 
 	class Program
@@ -67,6 +67,8 @@ namespace MessagingServer
 			InitializeCommands.TryAdd("INFOREQ", ServerCommandManagement.RequestInfo);
 
 			//Add possible server commands
+			ServerCommands.TryAdd("SENDMSG", ServerCommandManagement.BroadcastMessage);
+
 			Console.WriteLine("What port should the server be bound to? (2015 is default)");
 			int port;
 			if (!Int32.TryParse(Console.ReadLine(), out port))

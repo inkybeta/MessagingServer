@@ -62,5 +62,18 @@ namespace MessagingServer.Tasks
 			thread.Start(clientSocket);
 			Program.AnonymousThreads.Add(thread);
 		}
+
+		public static string BroadcastMessage(params string[] value)
+		{
+			if (value.Length != 1)
+			{
+				return "Incorrect amount of parameters";
+			}
+			foreach (KeyValuePair<string, UserClientService> client in Program.Clients)
+			{
+				client.Value.SendMessage(value[0]);
+			}
+			return "";
+		}
 	}
 }

@@ -67,7 +67,6 @@ namespace MessagingServerBusiness
 	    public CommandParameterPair RecieveMessage()
 	    {
 		    int messageLength;
-		    string message;
 		    using (var stream = new MemoryStream())
 		    {
 			    while (stream.Length != 4)
