@@ -7,91 +7,41 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using MessagingServer.ClientManagementTasks;
 using MessagingServer.Tasks;
 using MessagingServerBusiness;
+using MessagingServerCore;
 using Newtonsoft.Json;
 
 namespace MessagingServer
 {
+	public delegate CommandParameterPair ClientCommand(params string[] parameters);
 	public delegate string ServerCommand(params string[] input);
 	public delegate void InitializeCommand(Socket clientSocket, params string[] value);
 
-	class Program
+	internal class Program
 	{
 		internal static Socket ServerSocket { get; set; }
 
 
 		// The bag of threads for managing clients
 		internal static ConcurrentBag<Thread> AcceptThreads { get; set; }
-		internal static ConcurrentBag<Thread> AnonymousThreads { get; set; } 
-		internal static ConcurrentBag<Thread> ClientThreads { get; set; }
+		internal static ConcurrentDictionary<string, Thread> AnonymousThreads { get; set; }
+		internal static ConcurrentDictionary<string, Thread> ClientThreads { get; set; }
 
-		// The th
 		internal static ConcurrentDictionary<string, string> ServerProperties { get; set; }
 		internal static ConcurrentDictionary<string, ServerCommand> ServerCommands { get; set; }
 		internal static ConcurrentDictionary<string, InitializeCommand> InitializeCommands { get; set; }
+		internal static ConcurrentDictionary<string, ClientCommand> ClientCommands { get; set; }
 		internal static volatile int ServerState = 1;
 
 		internal static ConcurrentDictionary<string, UserClientService> Clients { get; set; }
 
-		static void Main(string[] args)
+		private static void Main(string[] args)
 		{
 			//Initialize the server
-			ServerSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-			ServerProperties = new ConcurrentDictionary<string, string>();
-			ServerCommands = new ConcurrentDictionary<string, ServerCommand>();
-			Clients = new ConcurrentDictionary<string, UserClientService>();
-			InitializeCommands = new ConcurrentDictionary<string, InitializeCommand>();
-			ClientThreads = new ConcurrentBag<Thread>();
-			AcceptThreads = new ConcurrentBag<Thread>();
-			AnonymousThreads = new ConcurrentBag<Thread>();
-
-
-			Console.WriteLine("The server is starting");
-			Console.WriteLine("Type the name of the file that holds the server properties");
-
-			//Read the file of the properties
-			var file = Console.ReadLine();
-			string fileName = String.IsNullOrEmpty(file) ? "properties.json" : file;
-			if (!File.Exists(fileName))
-			{
-				StreamWriter writer = new StreamWriter(File.Create(fileName));
-				writer.Write("{" +
-				             "'SSLENABLED':'false'," +
-				             "'SERVERVENDOR': 'inkynet'" +
-				             "}");
-				writer.Close();
-			}
-			ServerProperties =
-				new ConcurrentDictionary<string, string>(ServerProperties.Concat(JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(fileName))));
-
-			//Add possible init commands
-			InitializeCommands.TryAdd("CONNECT", ServerCommandManagement.Connect);
-			InitializeCommands.TryAdd("INFOREQ", ServerCommandManagement.RequestInfo);
-
-			//Add possible server commands
-			ServerCommands.TryAdd("SENDMSG", ServerCommandManagement.BroadcastMessage);
-
-			Console.WriteLine("What port should the server be bound to? (2015 is default)");
-			int port;
-			if (!Int32.TryParse(Console.ReadLine(), out port))
-				port = 2015;
-			Console.WriteLine("The server has started on {0}", port);
-
-			//Start the socket
-			ServerSocket.Bind(new IPEndPoint(IPAddress.Loopback, port));
-			ServerSocket.Listen(Int32.MaxValue);
-
-			Console.WriteLine("How many threads should be allocated to accepting new clients? (Default is 2)");
-			int acceptThreads;
-			if (!Int32.TryParse(Console.ReadLine(), out acceptThreads))
-				acceptThreads = 2;
-
-			for (int i = 0; i < acceptThreads; i++)
-			{
-				Thread thread = new Thread(ClientManagement.AcceptNewClients);
-				AcceptThreads.Add(thread);
-			}
+			InitializeServer.Start();
+			
 			Console.WriteLine("Press q to stop the server");
 			Console.WriteLine("Server is starting");
 			foreach (Thread thread in AcceptThreads)
@@ -99,6 +49,7 @@ namespace MessagingServer
 				thread.Start();
 			}
 			Console.WriteLine("Server has been started");
+
 			while (true)
 			{
 				if (Console.ReadKey() == new ConsoleKeyInfo('q', ConsoleKey.Q, false, false, false))
@@ -111,25 +62,50 @@ namespace MessagingServer
 						byte[] bytes = Encoding.UTF8.GetBytes("INFOREQ");
 						Socket sendSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 						sendSocket.Connect(IPAddress.Loopback, 2015);
-						sendSocket.SendTo(BitConverter.GetBytes(bytes.Length), 0, 4, SocketFlags.None, new IPEndPoint(IPAddress.Loopback, 2015));
+						sendSocket.SendTo(BitConverter.GetBytes(bytes.Length), 0, 4, SocketFlags.None,
+							new IPEndPoint(IPAddress.Loopback, 2015));
 						sendSocket.SendTo(bytes, 0, bytes.Length, SocketFlags.None, new IPEndPoint(IPAddress.Loopback, 2015));
 						thread.Join();
 					}
 					break;
 				}
 			}
-			foreach (Thread thread in ClientThreads)
+
+			// Clean up code
+			foreach (KeyValuePair<string, Thread> thread in ClientThreads)
 			{
-				thread.Join();
+				thread.Value.Join();
 			}
-			foreach (Thread thread in AnonymousThreads)
+			foreach (KeyValuePair<string, Thread> thread in AnonymousThreads)
 			{
-				thread.Abort();
-				thread.Join();
+				thread.Value.Abort();
+				thread.Value.Join();
 			}
 			Console.WriteLine("Server has stopped. Press any key to exit");
 			Console.ReadKey();
 			Environment.Exit(0);
 		}
+
+		public static void Disconnect(ThreadType type, string username)
+		{
+			if (type == ThreadType.AnonymousThread)
+			{
+				Thread value;
+				AnonymousThreads.TryRemove(username, out value);
+				value.Join();
+			}
+			if (type == ThreadType.ClientThread)
+			{
+				Thread value;
+				ClientThreads.TryRemove(username, out value);
+				value.Join();
+			}
+		}
+	}
+
+	public enum ThreadType
+	{
+		AnonymousThread,
+		ClientThread
 	}
 }

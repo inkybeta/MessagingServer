@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using MessagingServerCore;
 
 namespace MessagingServerBusiness
 {
-	public delegate void ClientCommand(string parameters);
     public class UserClientService
     {
 		public UserClient Client { get; set; }
@@ -65,6 +58,15 @@ namespace MessagingServerBusiness
 		}
 
 		/// <summary>
+		/// Reserved for the server
+		/// </summary>
+		/// <param name="command">The command to be sent</param>
+	    public void SendCommand(CommandParameterPair command)
+		{
+			Send(command);
+		}
+
+		/// <summary>
 		/// Recieve a message
 		/// </summary>
 		/// <returns></returns>
@@ -89,7 +91,7 @@ namespace MessagingServerBusiness
 				    int bytesRecieved = Client.ClientSocket.Receive(buffer);
 					stream.Write(buffer, 0, bytesRecieved);
 			    }
-			    CommandParameterPair pair = ConvertMessage(Encoding.UTF8.GetString(stream.ToArray()));
+			    CommandParameterPair pair = DecodeMessage(Encoding.UTF8.GetString(stream.ToArray()));
 			    if (pair == null)
 			    {
 				    SendInvalid("The command was not formatted correctly");
@@ -112,24 +114,17 @@ namespace MessagingServerBusiness
 			    Client.ClientSocket.Send(fullMessage, fullMessage.Length, SocketFlags.None);
 			    return;
 		    }
-			StringBuilder builder = new StringBuilder();
-		    foreach (string parameter in command.Parameters)
-			    builder.Append(String.Format("{0}&", parameter));
-		    string temp = builder.ToString();
-		    string parameters = temp.Substring(0, temp.Length - 1);
-		    string smessage = String.Format("{0} {1}", command.Command, parameters);
+			string smessage = EncodeMessage(command);
 		    byte[] byteMessage = Encoding.UTF8.GetBytes(smessage);
 		    Client.ClientSocket.Send(BitConverter.GetBytes(byteMessage.Length), 4, SocketFlags.None);
 		    Client.ClientSocket.Send(byteMessage, byteMessage.Length, SocketFlags.None);
 	    }
 
-		private CommandParameterPair ConvertMessage(string input)
+		private CommandParameterPair DecodeMessage(string input)
 		{
 			string[] messageAndValue = input.Split(' ');
 			if (messageAndValue.Length > 2)
-			{
 				return null;
-			}
 			string command = messageAndValue[0];
 			if (messageAndValue.Length == 2)
 			{
@@ -140,6 +135,19 @@ namespace MessagingServerBusiness
 			}
 			return new CommandParameterPair(command, new string[0]);
 		}
+
+	    private string EncodeMessage(CommandParameterPair pair)
+	    {
+		    if (pair.ParameterLength == 0)
+			    return pair.Command;
+		    var builder = new StringBuilder();
+
+		    builder.Append(String.Format("{0} ",pair.Command));
+		    foreach (string i in pair.Parameters)
+			    builder.Append(String.Format("{0}&", Uri.EscapeDataString(i)));
+		    string built = builder.ToString();
+		    return built.Substring(0, built.Length - 1);
+	    }
 
 	    private void CloseConnection()
 	    {

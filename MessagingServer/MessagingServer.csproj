@@ -45,12 +45,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Management\ClientCommandManagement.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tasks\ClientManagement.cs" />
-    <Compile Include="Tasks\MessageManagement.cs" />
-    <Compile Include="Tasks\ServerCommandManagement.cs" />
-    <Compile Include="Tasks\SocketManagement.cs" />
+    <Compile Include="Management\ClientManagement.cs" />
+    <Compile Include="Tasks\InitializeServer.cs" />
+    <Compile Include="Management\MessageManagement.cs" />
+    <Compile Include="Management\ServerCommandManagement.cs" />
+    <Compile Include="Management\SocketManagement.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

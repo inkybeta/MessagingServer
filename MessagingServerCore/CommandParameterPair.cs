@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MessagingServerCore
+﻿namespace MessagingServerCore
 {
 	/// <summary>
 	/// Represents a command an parameters that have been escaped

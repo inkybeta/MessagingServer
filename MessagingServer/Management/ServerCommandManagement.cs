@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using MessagingServer.ClientManagementTasks;
 using MessagingServerBusiness;
 using MessagingServerCore;
 using Newtonsoft.Json;
@@ -44,7 +44,7 @@ namespace MessagingServer.Tasks
 			Program.Clients.TryAdd(username, service);
 			Thread thread = new Thread(ClientManagement.ManageClient);
 			thread.Start(service);
-			Program.ClientThreads.Add(thread);
+			Program.ClientThreads.TryAdd(username, thread);
 		}
 
 		public static void RequestInfo(Socket clientSocket, params string[] value)
@@ -60,20 +60,8 @@ namespace MessagingServer.Tasks
 			clientSocket.Send(json, json.Length, SocketFlags.None);
 			Thread thread = new Thread(ClientManagement.ManageAnonymous);
 			thread.Start(clientSocket);
-			Program.AnonymousThreads.Add(thread);
-		}
-
-		public static string BroadcastMessage(params string[] value)
-		{
-			if (value.Length != 1)
-			{
-				return "Incorrect amount of parameters";
-			}
-			foreach (KeyValuePair<string, UserClientService> client in Program.Clients)
-			{
-				client.Value.SendMessage(value[0]);
-			}
-			return "";
+			Guid guid = new Guid();
+			Program.AnonymousThreads.TryAdd(guid.ToString(), thread);
 		}
 	}
 }

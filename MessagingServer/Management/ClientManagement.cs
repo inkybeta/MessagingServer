@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
+using MessagingServer.Tasks;
 using MessagingServerBusiness;
 using MessagingServerCore;
-using Newtonsoft.Json;
 
-namespace MessagingServer.Tasks
+namespace MessagingServer.ClientManagementTasks
 {
 	public static class ClientManagement
 	{
@@ -25,6 +21,7 @@ namespace MessagingServer.Tasks
 						Console.WriteLine("Thread has been ended");
 						return;
 					}
+
 					Socket clientSocket = Program.ServerSocket.Accept();
 					Console.WriteLine("Connection has been accepted from {0}", clientSocket.RemoteEndPoint);
 
@@ -68,6 +65,11 @@ namespace MessagingServer.Tasks
 					Console.WriteLine("Thread has been stopped");
 					return;
 				}
+				catch (SocketException e)
+				{
+					Console.WriteLine("Improper disconect.");
+					continue;
+				}
 			}
 		}
 
@@ -76,32 +78,40 @@ namespace MessagingServer.Tasks
 			UserClientService client = (UserClientService) service;
 			while (true)
 			{
-				if (Program.ServerState == 0)
+				try
 				{
-					client.SendShutdown("The server is shutting down.");
-					return;
-				}
-				CommandParameterPair message = client.RecieveMessage();
-				if (message == null)
-				{
-					client.SendMessage("Command was formatted incorrectly");
-				}
-				ServerCommand command;
-				if (Program.ServerCommands.TryGetValue(message.Command, out command))
-				{
-					string classic = command(message.Parameters);
-					if (String.IsNullOrEmpty(classic))
+					if (Program.ServerState == 0)
 					{
-						continue;
+						client.SendShutdown("The server is shutting down.");
+						return;
+					}
+					CommandParameterPair message = client.RecieveMessage();
+					if (message == null || message.Command == null)
+					{
+						client.SendInvalid("Message was formatted incorrectly");
+					}
+					Console.WriteLine("Command {0} was sent from the user {1}", message.Command, client.Client.UserName);
+					ClientCommand command;
+					if (Program.ClientCommands.TryGetValue(message.Command, out command))
+					{
+						CommandParameterPair classic = command(message.Parameters);
+						if (classic == null)
+							continue;
+						client.SendCommand(classic);
+					}
+					else
+						client.SendInvalid(String.Format("Unknown command: {0}", message.Command));
+					if (Program.ServerState == 0)
+					{
+						client.SendShutdown("The server is shutting down.");
+						return;
 					}
 				}
-				else
+
+				catch (SocketException e)
 				{
-					client.SendInvalid(String.Format("Unknown command: {0}", message.Command));
-				}
-				if (Program.ServerState == 0)
-				{
-					client.SendShutdown("The server is shutting down.");
+					Console.WriteLine("User {0} has disconnected", client.Client.UserName);
+					Program.Disconnect(ThreadType.ClientThread, client.Client.UserName);
 					return;
 				}
 			}
@@ -109,24 +119,31 @@ namespace MessagingServer.Tasks
 
 		public static void ManageAnonymous(object socket)
 		{
-			Socket client = (Socket) socket;
-			if (Program.ServerState == 0)
+			try
 			{
-				SocketManagement.SendShutdown(client, "The server is shutting down", "0");
-				client.Close();
-				return;
+				Socket client = (Socket) socket;
+				if (Program.ServerState == 0)
+				{
+					SocketManagement.SendShutdown(client, "The server is shutting down", "0");
+					client.Close();
+					return;
+				}
+				string smessage = SocketManagement.RecieveMessage(client, SocketManagement.RecieveMessageLength(client));
+				CommandParameterPair message = MessageManagement.RecieveMessage(smessage);
+				InitializeCommand execute;
+				if (Program.InitializeCommands.TryGetValue(message.Command, out execute))
+				{
+					execute(client, message.Parameters);
+				}
+				else
+				{
+					SocketManagement.SendError(client, "Unable to find command (Concurrency Issues)");
+					client.Close();
+				}
 			}
-			string smessage = SocketManagement.RecieveMessage(client, SocketManagement.RecieveMessageLength(client));
-			CommandParameterPair message = MessageManagement.RecieveMessage(smessage);
-			InitializeCommand execute;
-			if (Program.InitializeCommands.TryGetValue(message.Command, out execute))
+			catch (SocketException e)
 			{
-				execute(client, message.Parameters);
-			}
-			else
-			{
-				SocketManagement.SendError(client, "Unable to find command (Concurrency Issues)");
-				client.Close();
+				
 			}
 		}
 	}
