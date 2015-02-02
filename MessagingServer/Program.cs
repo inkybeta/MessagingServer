@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace MessagingServer
 {
-	public delegate CommandParameterPair ClientCommand(params string[] parameters);
+	public delegate CommandParameterPair ClientCommand(string username, params string[] parameters);
 	public delegate string ServerCommand(params string[] input);
 	public delegate void InitializeCommand(Socket clientSocket, params string[] value);
 

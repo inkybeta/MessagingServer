@@ -49,10 +49,11 @@ namespace MessagingServerBusiness
 		/// <summary>
 		/// Send a message to the client.
 		/// </summary>
+		/// <param name="username">The user sending the message</param>
 		/// <param name="message">The message to send</param>
-	    public void SendMessage(string message)
+	    public void SendMessage(string username, string message)
 		{
-			var pair = new CommandParameterPair("NEWMSG", Uri.EscapeDataString(message));
+			var pair = new CommandParameterPair("NEWMSG", Uri.EscapeDataString(username), Uri.EscapeDataString(message));
 			Send(pair);
 		}
 

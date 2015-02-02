@@ -62,7 +62,7 @@ namespace MessagingServer.ClientManagementTasks
 				}
 				catch (ThreadAbortException e)
 				{
-					Console.WriteLine("Thread has been stopped");
+					Console.WriteLine("Thread has been stopped {0}", e.Data);
 					return;
 				}
 				catch (SocketException e)
@@ -94,7 +94,7 @@ namespace MessagingServer.ClientManagementTasks
 					ClientCommand command;
 					if (Program.ClientCommands.TryGetValue(message.Command, out command))
 					{
-						CommandParameterPair classic = command(message.Parameters);
+						CommandParameterPair classic = command(client.Client.UserName, message.Parameters);
 						if (classic == null)
 							continue;
 						client.SendCommand(classic);
