@@ -12,7 +12,7 @@ namespace MessagingServer.ClientManagementTasks
 	{
 		public static CommandParameterPair BroadcastMessage(string username, params string[] value)
 		{
-			if (value.Length != 2)
+			if (value.Length != 1)
 			{
 				return new CommandParameterPair("INVOP", Uri.EscapeDataString("Incorrect amount of parameters"));
 			}
