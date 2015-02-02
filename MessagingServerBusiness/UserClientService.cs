@@ -54,7 +54,6 @@ namespace MessagingServerBusiness
 		{
 			var pair = new CommandParameterPair("NEWMSG", Uri.EscapeDataString(message));
 			Send(pair);
-			CloseConnection();
 		}
 
 		/// <summary>
