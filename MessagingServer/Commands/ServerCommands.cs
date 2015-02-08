@@ -5,19 +5,20 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using MessagingServer.Management;
+using MessagingServer.Utilities;
 using MessagingServerBusiness;
 using MessagingServerCore;
 using Newtonsoft.Json;
 
-namespace MessagingServer.Tasks
+namespace MessagingServer.Commands
 {
-	public class ServerCommandManagement
+	public class ServerCommands
 	{
 		public static void Connect(Socket clientSocket, params string[] parameters)
 		{
 			if (parameters.Length != 2)
 			{
-				SocketManagement.SendInvalid(clientSocket, "Parameters not formatted correctly");
+				SocketUtilities.SendInvalid(clientSocket, "Parameters not formatted correctly");
 				clientSocket.Close();
 				return;
 			}
@@ -50,7 +51,7 @@ namespace MessagingServer.Tasks
 		{
 			if (value.Length != 0)
 			{
-				SocketManagement.SendInvalid(clientSocket, "INFOREQ should not send parameters");
+				SocketUtilities.SendInvalid(clientSocket, "INFOREQ should not send parameters");
 				clientSocket.Close();
 				return;
 			}

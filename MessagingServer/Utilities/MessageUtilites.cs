@@ -2,9 +2,9 @@
 using System.Text;
 using MessagingServerCore;
 
-namespace MessagingServer.Tasks
+namespace MessagingServer.Utilities
 {
-	public static class MessageManagement
+	public static class MessageUtilites
 	{
 		public static CommandParameterPair RecieveMessage(string input)
 		{

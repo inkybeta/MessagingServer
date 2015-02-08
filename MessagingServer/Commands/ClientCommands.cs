@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using MessagingServerBusiness;
 using MessagingServerCore;
 using Newtonsoft.Json;
 
-namespace MessagingServer.Management
+namespace MessagingServer.Commands
 {
-	public static class ClientCommandManagement
+	public static class ClientCommands
 	{
 		public static CommandParameterPair BroadcastMessage(string username, params string[] value)
 		{
@@ -34,7 +33,7 @@ namespace MessagingServer.Management
 				return new CommandParameterPair("INVOP", "Only one value (true/false) may be sent!");
 			foreach (IMessagingClient client in Program.Clients.Values)
 			{
-				client.SendCommand(new CommandParameterPair("AFK", username, value[0]));
+				client.SendCommand(new CommandParameterPair("AFKUSER", username, value[0]));
 			}
 			return null;
 		}

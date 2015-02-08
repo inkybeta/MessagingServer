@@ -45,14 +45,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Management\ClientCommandManagement.cs" />
+    <Compile Include="Commands\ClientCommands.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Management\ClientManagement.cs" />
     <Compile Include="Tasks\InitializeServer.cs" />
-    <Compile Include="Management\MessageManagement.cs" />
-    <Compile Include="Management\ServerCommandManagement.cs" />
-    <Compile Include="Management\SocketManagement.cs" />
+    <Compile Include="Utilities\MessageUtilites.cs" />
+    <Compile Include="Commands\ServerCommands.cs" />
+    <Compile Include="Utilities\SocketUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -72,9 +72,7 @@
       <Name>MessagingServerData</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Utilities\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -3,9 +3,9 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 
-namespace MessagingServer.Tasks
+namespace MessagingServer.Utilities
 {
-	public class SocketManagement
+	public class SocketUtilities
 	{
 		public static void SendError(Socket clientSocket, params string[] message)
 		{

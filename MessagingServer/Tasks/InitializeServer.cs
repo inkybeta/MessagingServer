@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using MessagingServer.Commands;
 using MessagingServer.Management;
 using MessagingServerBusiness;
 using Newtonsoft.Json;
@@ -71,13 +71,13 @@ namespace MessagingServer.Tasks
 		public static void LoadThreads()
 		{
 			//Add possible init commands
-			Program.InitializeCommands.TryAdd("CONNECT", ServerCommandManagement.Connect);
-			Program.InitializeCommands.TryAdd("INFOREQ", ServerCommandManagement.RequestInfo);
+			Program.InitializeCommands.TryAdd("CONNECT", ServerCommands.Connect);
+			Program.InitializeCommands.TryAdd("INFOREQ", ServerCommands.RequestInfo);
 
 			//Add possible server commands
-			Program.ClientCommands.TryAdd("SEND", ClientCommandManagement.BroadcastMessage);
-			Program.ClientCommands.TryAdd("INFOREQ", ClientCommandManagement.RequestInfo);
-			Program.ClientCommands.TryAdd("AFK", ClientCommandManagement.BroadcastAfkUser);
+			Program.ClientCommands.TryAdd("SEND", ClientCommands.BroadcastMessage);
+			Program.ClientCommands.TryAdd("INFOREQ", ClientCommands.RequestInfo);
+			Program.ClientCommands.TryAdd("AFK", ClientCommands.BroadcastAfkUser);
 
 			Console.WriteLine("What port should the server be bound to? (2015 is default)");
 			int port;
