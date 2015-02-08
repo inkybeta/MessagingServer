@@ -77,6 +77,7 @@ namespace MessagingServer.Tasks
 			//Add possible server commands
 			Program.ClientCommands.TryAdd("SEND", ClientCommandManagement.BroadcastMessage);
 			Program.ClientCommands.TryAdd("INFOREQ", ClientCommandManagement.RequestInfo);
+			Program.ClientCommands.TryAdd("AFK", ClientCommandManagement.BroadcastAfkUser);
 
 			Console.WriteLine("What port should the server be bound to? (2015 is default)");
 			int port;
