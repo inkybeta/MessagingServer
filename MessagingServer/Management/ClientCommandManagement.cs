@@ -6,7 +6,7 @@ using MessagingServerBusiness;
 using MessagingServerCore;
 using Newtonsoft.Json;
 
-namespace MessagingServer.ClientManagementTasks
+namespace MessagingServer.Management
 {
 	public static class ClientCommandManagement
 	{
@@ -26,6 +26,11 @@ namespace MessagingServer.ClientManagementTasks
 		public static CommandParameterPair RequestInfo(string username, params string[] value)
 		{
 			return new CommandParameterPair("INFORESP", JsonConvert.SerializeObject(Program.ServerProperties.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)));
+		}
+
+		public static CommandParameterPair BroadcastAFKUser(string username, params string[] value)
+		{
+			
 		}
 	}
 }

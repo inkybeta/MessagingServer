@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using MessagingServer.ClientManagementTasks;
+using MessagingServer.Management;
 using MessagingServerBusiness;
 using Newtonsoft.Json;
 
@@ -59,8 +59,10 @@ namespace MessagingServer.Tasks
 						Program.ServerProperties.Concat(
 							JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(fileName))));
 			}
-			catch (JsonException e)
+			catch (JsonException exception)
 			{
+				Console.WriteLine("Error: {0}", exception.Data);
+				Console.WriteLine("Using default values.");
 				Program.ServerProperties.TryAdd("SSLENABLED", "false");
 				Program.ServerProperties.TryAdd("SERVERVENDOR", "inkynet");
 				Console.WriteLine("An invalid file was found. Using a temporary file.");

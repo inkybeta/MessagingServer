@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using MessagingServer.Tasks;
@@ -67,7 +68,7 @@ namespace MessagingServer.ClientManagementTasks
 				}
 				catch (SocketException e)
 				{
-					Console.WriteLine("Improper disconect.");
+					Console.WriteLine("Improper disconnect. Data: {0}", e.Data);
 					continue;
 				}
 			}
@@ -119,9 +120,9 @@ namespace MessagingServer.ClientManagementTasks
 
 		public static void ManageAnonymous(object socket)
 		{
+			Socket client = (Socket)socket;
 			try
 			{
-				Socket client = (Socket) socket;
 				if (Program.ServerState == 0)
 				{
 					SocketManagement.SendShutdown(client, "The server is shutting down", "0");
@@ -143,7 +144,12 @@ namespace MessagingServer.ClientManagementTasks
 			}
 			catch (SocketException e)
 			{
-				
+				if (client.RemoteEndPoint == null)
+				{
+					Console.WriteLine("A severe error has occurred with the client. Data: {0}", e.Data);
+					return;
+				}
+				Console.WriteLine("Error: A client has disconnected from {0}. ", (client.RemoteEndPoint as IPEndPoint).Address);
 			}
 		}
 	}
