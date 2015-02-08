@@ -3,12 +3,13 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using MessagingServerCore;
+using MessagingServerCore.Interfaces;
 
 namespace MessagingServerBusiness
 {
     public class UserClientService : IMessagingClient
     {
-		public UserClient Client { get; set; }
+		public IClient Client { get; set; }
 
 		/// <summary>
 		/// Creates a new service off of a client socket.
@@ -100,6 +101,7 @@ namespace MessagingServerBusiness
 			    return pair;
 		    }
 	    }
+
 
 		/// <summary>
 		/// Recieves the 

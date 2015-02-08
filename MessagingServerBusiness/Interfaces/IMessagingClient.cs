@@ -1,11 +1,11 @@
 using MessagingServerCore;
+using MessagingServerCore.Interfaces;
 
 namespace MessagingServerBusiness
 {
 	public interface IMessagingClient
 	{
-		UserClient Client { get; set; }
-
+		IClient Client { get; set; }
 		/// <summary>
 		/// Send a shutdown message. Reserved for the server
 		/// </summary>
