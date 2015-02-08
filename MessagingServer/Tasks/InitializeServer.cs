@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using MessagingServer.ClientManagementTasks;
 using MessagingServer.Management;
 using MessagingServerBusiness;
 using Newtonsoft.Json;
@@ -24,7 +23,7 @@ namespace MessagingServer.Tasks
 			Program.ServerSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 			Program.ServerProperties = new ConcurrentDictionary<string, string>();
 			Program.ServerCommands = new ConcurrentDictionary<string, ServerCommand>();
-			Program.Clients = new ConcurrentDictionary<string, UserClientService>();
+			Program.Clients = new ConcurrentDictionary<string, IMessagingClient>();
 			Program.InitializeCommands = new ConcurrentDictionary<string, InitializeCommand>();
 			Program.ClientCommands = new ConcurrentDictionary<string, ClientCommand>();
 			Program.ClientThreads = new ConcurrentDictionary<string, Thread>();

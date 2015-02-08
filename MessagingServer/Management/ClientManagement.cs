@@ -6,7 +6,7 @@ using MessagingServer.Tasks;
 using MessagingServerBusiness;
 using MessagingServerCore;
 
-namespace MessagingServer.ClientManagementTasks
+namespace MessagingServer.Management
 {
 	public static class ClientManagement
 	{
@@ -76,7 +76,7 @@ namespace MessagingServer.ClientManagementTasks
 
 		public static void ManageClient(object service)
 		{
-			UserClientService client = (UserClientService) service;
+			IMessagingClient client = (IMessagingClient) service;
 			while (true)
 			{
 				try

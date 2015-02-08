@@ -16,7 +16,7 @@ namespace MessagingServer.Management
 			{
 				return new CommandParameterPair("INVOP", Uri.EscapeDataString("Incorrect amount of parameters"));
 			}
-			foreach (KeyValuePair<string, UserClientService> client in Program.Clients)
+			foreach (KeyValuePair<string, IMessagingClient> client in Program.Clients)
 			{
 				client.Value.SendMessage(username, value[0]);
 			}
@@ -28,9 +28,15 @@ namespace MessagingServer.Management
 			return new CommandParameterPair("INFORESP", JsonConvert.SerializeObject(Program.ServerProperties.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)));
 		}
 
-		public static CommandParameterPair BroadcastAFKUser(string username, params string[] value)
+		public static CommandParameterPair BroadcastAfkUser(string username, params string[] value)
 		{
-			
+			if (value.Length != 1)
+				return new CommandParameterPair("INVOP", "Only one value (true/false) may be sent!");
+			foreach (IMessagingClient client in Program.Clients.Values)
+			{
+				client.SendCommand(new CommandParameterPair("AFK", username, value[0]));
+			}
+			return null;
 		}
 	}
 }

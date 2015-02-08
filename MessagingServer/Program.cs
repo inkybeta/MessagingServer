@@ -31,7 +31,7 @@ namespace MessagingServer
 		internal static ConcurrentDictionary<string, ClientCommand> ClientCommands { get; set; }
 		internal static volatile int ServerState = 1;
 
-		internal static ConcurrentDictionary<string, UserClientService> Clients { get; set; }
+		internal static ConcurrentDictionary<string, IMessagingClient> Clients { get; set; }
 
 		private static void Main(string[] args)
 		{

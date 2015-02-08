@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using MessagingServer.ClientManagementTasks;
+using MessagingServer.Management;
 using MessagingServerBusiness;
 using MessagingServerCore;
 using Newtonsoft.Json;

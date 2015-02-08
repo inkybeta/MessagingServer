@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interfaces\IMessagingClient.cs" />
     <Compile Include="UserClientService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

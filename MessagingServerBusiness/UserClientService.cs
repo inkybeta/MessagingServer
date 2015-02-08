@@ -6,7 +6,7 @@ using MessagingServerCore;
 
 namespace MessagingServerBusiness
 {
-    public class UserClientService
+    public class UserClientService : IMessagingClient
     {
 		public UserClient Client { get; set; }
 
