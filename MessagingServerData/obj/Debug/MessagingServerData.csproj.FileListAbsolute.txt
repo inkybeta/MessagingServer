@@ -1,5 +1,0 @@
-C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerData\bin\Debug\MessagingServerData.dll
-C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerData\bin\Debug\MessagingServerData.pdb
-C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerData\obj\Debug\MessagingServerData.csprojResolveAssemblyReference.cache
-C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerData\obj\Debug\MessagingServerData.dll
-C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerData\obj\Debug\MessagingServerData.pdb

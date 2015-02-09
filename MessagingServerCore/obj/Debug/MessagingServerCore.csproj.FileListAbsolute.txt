@@ -3,5 +3,8 @@ C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingS
 C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerCore\obj\Debug\MessagingServerCore.csprojResolveAssemblyReference.cache
 C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerCore\obj\Debug\MessagingServerCore.dll
 C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerCore\obj\Debug\MessagingServerCore.pdb
-C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerCore\bin\Debug\Newtonsoft.Json.dll
-C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerCore\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Andrew\Desktop\MessagingServer\MessagingServerCore\bin\Debug\MessagingServerCore.dll
+C:\Users\Andrew\Desktop\MessagingServer\MessagingServerCore\bin\Debug\MessagingServerCore.pdb
+C:\Users\Andrew\Desktop\MessagingServer\MessagingServerCore\obj\Debug\MessagingServerCore.csprojResolveAssemblyReference.cache
+C:\Users\Andrew\Desktop\MessagingServer\MessagingServerCore\obj\Debug\MessagingServerCore.dll
+C:\Users\Andrew\Desktop\MessagingServer\MessagingServerCore\obj\Debug\MessagingServerCore.pdb
