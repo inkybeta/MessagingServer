@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using MessagingServerBusiness;
 using MessagingServerCore;
 using Newtonsoft.Json;
@@ -30,14 +28,9 @@ namespace MessagingServer.Commands
 			{
 				return new CommandParameterPair("INVOP", "Invalid number of parameters for requesting info.");
 			}
-			StringBuilder builder = new StringBuilder();
-			builder.Append("[");
-			foreach (IMessagingClient client in Program.Clients.Values)
-			{
-				
-			}
-			return new CommandParameterPair("USERRESP", builder.ToString());
+			return new CommandParameterPair("USERSRESP", JsonConvert.SerializeObject(Program.Clients));
 		}
+
 		public static CommandParameterPair RequestInfo(string username, params string[] value)
 		{
 			return new CommandParameterPair("INFORESP", JsonConvert.SerializeObject(Program.ServerProperties.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)));

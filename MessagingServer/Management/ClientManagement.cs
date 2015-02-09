@@ -91,7 +91,7 @@ namespace MessagingServer.Management
 					{
 						client.SendInvalid("Message was formatted incorrectly");
 					}
-					Console.WriteLine("Command {0} was sent from the user {1}", message.Command, client.Client.UserName);
+					Console.WriteLine("Command {0} was sent from the user {1}", message.Command, client.UserName);
 					ClientCommand command;
 					if (Program.ClientCommands.TryGetValue(message.Command, out command))
 					{
