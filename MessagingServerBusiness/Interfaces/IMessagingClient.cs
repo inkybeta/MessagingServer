@@ -1,10 +1,17 @@
+using System.Security.Cryptography.X509Certificates;
 using MessagingServerCore;
+using MessagingServerCore.Interfaces;
+using Newtonsoft.Json;
 
 namespace MessagingServerBusiness
 {
 	public interface IMessagingClient
 	{
-		UserClient Client { get; set; }
+		[JsonIgnore]
+		IClient Client { get; set; }
+
+		string UserName { get; set; }
+		bool IsAfk { get; set; }
 
 		/// <summary>
 		/// Send a shutdown message. Reserved for the server
@@ -17,8 +24,6 @@ namespace MessagingServerBusiness
 		/// </summary>
 		/// <param name="reason">Send the reason for disconnecting the client.</param>
 		void Disconnect(string reason);
-
-		void SendInvalid(string message);
 
 		/// <summary>
 		/// Send a message to the client.
@@ -33,10 +38,8 @@ namespace MessagingServerBusiness
 		/// <param name="command">The command to be sent</param>
 		void SendCommand(CommandParameterPair command);
 
-		/// <summary>
-		/// Recieve a message
-		/// </summary>
-		/// <returns></returns>
+		void SendInvalid(string message);
+
 		CommandParameterPair RecieveMessage();
 	}
 }

@@ -22,6 +22,15 @@ namespace MessagingServer.Commands
 			return null;
 		}
 
+		public static CommandParameterPair UsersRequest(string username, params string[] value)
+		{
+			if (value.Length != 0)
+			{
+				return new CommandParameterPair("INVOP", "Invalid number of parameters for requesting info.");
+			}
+			return new CommandParameterPair("USERSRESP", JsonConvert.SerializeObject(Program.Clients));
+		}
+
 		public static CommandParameterPair RequestInfo(string username, params string[] value)
 		{
 			return new CommandParameterPair("INFORESP", JsonConvert.SerializeObject(Program.ServerProperties.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)));

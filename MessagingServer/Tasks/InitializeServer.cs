@@ -66,6 +66,8 @@ namespace MessagingServer.Tasks
 				Program.ServerProperties.TryAdd("SERVERVENDOR", "inkynet");
 				Console.WriteLine("An invalid file was found. Using a temporary file.");
 			}
+			Console.WriteLine("The server has been initiated with the following properties:");
+			Console.WriteLine(JsonConvert.SerializeObject(Program.ServerProperties));
 		}
 
 		public static void LoadThreads()
@@ -78,6 +80,7 @@ namespace MessagingServer.Tasks
 			Program.ClientCommands.TryAdd("SEND", ClientCommands.BroadcastMessage);
 			Program.ClientCommands.TryAdd("INFOREQ", ClientCommands.RequestInfo);
 			Program.ClientCommands.TryAdd("AFK", ClientCommands.BroadcastAfkUser);
+			Program.ClientCommands.TryAdd("USERSREQ", ClientCommands.UsersRequest);
 
 			Console.WriteLine("What port should the server be bound to? (2015 is default)");
 			int port;
