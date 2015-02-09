@@ -1,9 +1,8 @@
-using System.Security.Cryptography.X509Certificates;
 using MessagingServerCore;
 using MessagingServerCore.Interfaces;
 using Newtonsoft.Json;
 
-namespace MessagingServerBusiness
+namespace MessagingServerBusiness.Interfaces
 {
 	public interface IMessagingClient
 	{

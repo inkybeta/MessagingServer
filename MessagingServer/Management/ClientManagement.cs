@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using MessagingServer.Models;
 using MessagingServer.Utilities;
-using MessagingServerBusiness;
+using MessagingServerBusiness.Interfaces;
 using MessagingServerCore;
 
 namespace MessagingServer.Management

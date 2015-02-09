@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Threading;
 using MessagingServer.Commands;
 using MessagingServer.Management;
-using MessagingServerBusiness;
+using MessagingServerBusiness.Interfaces;
 using Newtonsoft.Json;
 
 namespace MessagingServer.Tasks

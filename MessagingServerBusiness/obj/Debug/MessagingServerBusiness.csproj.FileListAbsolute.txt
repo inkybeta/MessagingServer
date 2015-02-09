@@ -16,3 +16,5 @@ C:\Users\Andrew\Desktop\MessagingServer\MessagingServerBusiness\bin\Debug\Messag
 C:\Users\Andrew\Desktop\MessagingServer\MessagingServerBusiness\obj\Debug\MessagingServerBusiness.csprojResolveAssemblyReference.cache
 C:\Users\Andrew\Desktop\MessagingServer\MessagingServerBusiness\obj\Debug\MessagingServerBusiness.dll
 C:\Users\Andrew\Desktop\MessagingServer\MessagingServerBusiness\obj\Debug\MessagingServerBusiness.pdb
+C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerBusiness\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerBusiness\bin\Debug\Newtonsoft.Json.xml

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MessagingServerBusiness;
+using MessagingServerBusiness.Interfaces;
 using MessagingServerCore;
 using Newtonsoft.Json;
 

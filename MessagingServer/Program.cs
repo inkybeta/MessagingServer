@@ -5,9 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using MessagingServer.Management;
 using MessagingServer.Tasks;
-using MessagingServerBusiness;
+using MessagingServerBusiness.Interfaces;
 using MessagingServerCore;
 
 namespace MessagingServer
@@ -55,23 +54,14 @@ namespace MessagingServer
 				{
 					ServerState = 0;
 					Console.WriteLine("Server is stopping");
-					foreach (Thread thread in AcceptThreads)
-					{
-						byte[] bytes = Encoding.UTF8.GetBytes("INFOREQ");
-						Socket sendSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-						sendSocket.Connect(IPAddress.Loopback, 2015);
-						sendSocket.SendTo(BitConverter.GetBytes(bytes.Length), 0, 4, SocketFlags.None,
-							new IPEndPoint(IPAddress.Loopback, 2015));
-						sendSocket.SendTo(bytes, 0, bytes.Length, SocketFlags.None, new IPEndPoint(IPAddress.Loopback, 2015));
-						thread.Join();
-					}
+					ServerSocket.Close();
 					break;
 				}
 				if (key == new ConsoleKeyInfo('u', ConsoleKey.U, false, false, false))
 				{
 					ServerState = 2;
 					byte[] bytes = Encoding.UTF8.GetBytes("INFOREQ");
-					for (int i = 0; i < 2; i++)
+					for (int i = 0; i < 3; i++)
 					{
 						Socket sendSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 						sendSocket.Connect(IPAddress.Loopback, 2015);

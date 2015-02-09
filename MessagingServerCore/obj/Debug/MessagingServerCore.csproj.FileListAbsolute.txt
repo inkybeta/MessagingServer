@@ -8,3 +8,5 @@ C:\Users\Andrew\Desktop\MessagingServer\MessagingServerCore\bin\Debug\MessagingS
 C:\Users\Andrew\Desktop\MessagingServer\MessagingServerCore\obj\Debug\MessagingServerCore.csprojResolveAssemblyReference.cache
 C:\Users\Andrew\Desktop\MessagingServer\MessagingServerCore\obj\Debug\MessagingServerCore.dll
 C:\Users\Andrew\Desktop\MessagingServer\MessagingServerCore\obj\Debug\MessagingServerCore.pdb
+C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerCore\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Justin\Documents\Visual Studio 2013\Projects\MessagingServer\MessagingServerCore\bin\Debug\Newtonsoft.Json.xml
