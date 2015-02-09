@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using MessagingServer.Management;
+using MessagingServer.Models;
 using MessagingServer.Utilities;
 using MessagingServerBusiness;
 using MessagingServerCore;
@@ -59,8 +60,9 @@ namespace MessagingServer.Commands
 			clientSocket.Send(BitConverter.GetBytes(json.Length), 4, SocketFlags.None);
 			clientSocket.Send(json, json.Length, SocketFlags.None);
 			Thread thread = new Thread(ClientManagement.ManageAnonymous);
-			thread.Start(clientSocket);
-			Guid guid = new Guid();
+			Guid guid = Guid.NewGuid();
+			AnonymousThread athread = new AnonymousThread(guid.ToString(), clientSocket);
+			thread.Start(athread);
 			Program.AnonymousThreads.TryAdd(guid.ToString(), thread);
 		}
 	}

@@ -61,32 +61,39 @@ namespace MessagingServerCore
 
 		public CommandParameterPair RecieveCommand()
 		{
-			int messageLength;
-			using (var stream = new MemoryStream())
+			while (true)
 			{
-				while (stream.Length != 4)
+				int messageLength;
+				using (var stream = new MemoryStream())
 				{
-					var buffer = new byte[4 - stream.Length];
-					int bytesRecieved = ClientSocket.Receive(buffer);
-					stream.Write(buffer, 0, bytesRecieved);
+					while (stream.Length != 4)
+					{
+						var buffer = new byte[4 - stream.Length];
+						int bytesRecieved = ClientSocket.Receive(buffer);
+						stream.Write(buffer, 0, bytesRecieved);
+						if (!CheckIfConnected())
+							return null;
+					}
+					messageLength = BitConverter.ToInt32(stream.ToArray(), 0);
 				}
-				messageLength = BitConverter.ToInt32(stream.ToArray(), 0);
-			}
-			using (var stream = new MemoryStream())
-			{
-				while (stream.Length != messageLength)
+				using (var stream = new MemoryStream())
 				{
-					var buffer = new byte[512];
-					int bytesRecieved = ClientSocket.Receive(buffer);
-					stream.Write(buffer, 0, bytesRecieved);
+					while (stream.Length != messageLength)
+					{
+						var buffer = new byte[512];
+						int bytesRecieved = ClientSocket.Receive(buffer);
+						stream.Write(buffer, 0, bytesRecieved);
+						if (!CheckIfConnected())
+							return null;
+					}
+					CommandParameterPair pair = DecodeMessage(Encoding.UTF8.GetString(stream.ToArray()));
+					if (pair == null)
+					{
+						SendInvalid("The command was not formatted correctly");
+						continue;
+					}
+					return pair;
 				}
-				CommandParameterPair pair = DecodeMessage(Encoding.UTF8.GetString(stream.ToArray()));
-				if (pair == null)
-				{
-					SendInvalid("The command was not formatted correctly");
-					return null;
-				}
-				return pair;
 			}
 		}
 
@@ -127,6 +134,15 @@ namespace MessagingServerCore
 		public void CloseConnection()
 		{
 			ClientSocket.Disconnect(false);
+		}
+
+		private bool CheckIfConnected()
+		{
+			bool isBlocking = ClientSocket.Poll(1000, SelectMode.SelectRead);
+			bool isAvailable = (ClientSocket.Available == 0);
+			if (isBlocking && isAvailable)
+				return false;
+			return true;
 		}
     }
 }

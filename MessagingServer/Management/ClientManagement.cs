@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
+using MessagingServer.Models;
 using MessagingServer.Utilities;
 using MessagingServerBusiness;
 using MessagingServerCore;
@@ -22,13 +24,27 @@ namespace MessagingServer.Management
 						Console.WriteLine("Thread has been ended");
 						return;
 					}
+					if (Program.ServerState == 2)
+					{
+						Thread.Sleep(Timeout.Infinite);
+					}
 
 					Socket clientSocket = Program.ServerSocket.Accept();
 					Console.WriteLine("Connection has been accepted from {0}", clientSocket.RemoteEndPoint);
 
 
 					int messageLength = SocketUtilities.RecieveMessageLength(clientSocket);
+					if (messageLength == -1)
+					{
+						clientSocket.Close();
+						continue;
+					}
 					string stringmessage = SocketUtilities.RecieveMessage(clientSocket, messageLength);
+					if (stringmessage == null)
+					{
+						clientSocket.Close();
+						continue;
+					}
 
 					CommandParameterPair message = MessageUtilites.RecieveMessage(stringmessage);
 					if (message == null)
@@ -60,16 +76,23 @@ namespace MessagingServer.Management
 						Console.WriteLine("Thread has been ended");
 						return;
 					}
+					if (Program.ServerState == 2)
+					{
+						Thread.Sleep(Timeout.Infinite);
+					}
 				}
 				catch (ThreadAbortException e)
 				{
-					Console.WriteLine("Thread has been stopped {0}", e.Data);
+					Console.WriteLine("Thread has been stopped {0}", e.Data.Values);
 					return;
+				}
+				catch (ThreadInterruptedException)
+				{
+					Console.WriteLine("Resuming accepting threads");
 				}
 				catch (SocketException e)
 				{
 					Console.WriteLine("Improper disconnect. Data: {0}", e.Data);
-					continue;
 				}
 			}
 		}
@@ -86,12 +109,24 @@ namespace MessagingServer.Management
 						client.SendShutdown("The server is shutting down.");
 						return;
 					}
-					CommandParameterPair message = client.RecieveMessage();
-					if (message == null || message.Command == null)
+					if (Program.ServerState == 2)
 					{
-						client.SendInvalid("Message was formatted incorrectly");
+						Thread.Sleep(Timeout.Infinite);
 					}
-					Console.WriteLine("Command {0} was sent from the user {1} with parameters {2}", message.Command, client.UserName, message.Parameters);
+					CommandParameterPair message = client.RecieveMessage();
+					if (message == null)
+					{
+						Console.WriteLine("A user has disconnected");
+						Program.Disconnect(ThreadType.ClientThread, client.UserName);
+						return;
+					}
+					var parameters = new StringBuilder();
+					foreach (string param in message.Parameters)
+					{
+						parameters.Append(param + " ");
+					}
+					Console.WriteLine("Command {0} was sent from the user {1} with parameters '{2}'", message.Command, client.UserName,
+						parameters);
 					ClientCommand command;
 					if (Program.ClientCommands.TryGetValue(message.Command, out command))
 					{
@@ -108,7 +143,13 @@ namespace MessagingServer.Management
 						return;
 					}
 				}
-
+				catch (ThreadAbortException)
+				{
+					return;
+				}
+				catch (ThreadInterruptedException)
+				{
+				}
 				catch (SocketException e)
 				{
 					Console.WriteLine("User {0} has disconnected. Data: {1}", client.Client.UserName, e.Data);
@@ -120,36 +161,41 @@ namespace MessagingServer.Management
 
 		public static void ManageAnonymous(object socket)
 		{
-			Socket client = (Socket)socket;
+			AnonymousThread client = (AnonymousThread) socket;
 			try
 			{
 				if (Program.ServerState == 0)
 				{
-					SocketUtilities.SendShutdown(client, "The server is shutting down", "0");
-					client.Close();
+					SocketUtilities.SendShutdown(client.Client, "The server is shutting down", "0");
+					client.Client.Close();
 					return;
 				}
-				string smessage = SocketUtilities.RecieveMessage(client, SocketUtilities.RecieveMessageLength(client));
+				string smessage = SocketUtilities.RecieveMessage(client.Client, SocketUtilities.RecieveMessageLength(client.Client));
+				if (smessage == null)
+				{
+					Program.Disconnect(ThreadType.AnonymousThread, client.Guid);
+					return;
+				}
 				CommandParameterPair message = MessageUtilites.RecieveMessage(smessage);
 				InitializeCommand execute;
 				if (Program.InitializeCommands.TryGetValue(message.Command, out execute))
 				{
-					execute(client, message.Parameters);
+					execute(client.Client, message.Parameters);
 				}
 				else
 				{
-					SocketUtilities.SendError(client, "Unable to find command (Concurrency Issues)");
-					client.Close();
+					SocketUtilities.SendError(client.Client, "Unable to find command (Concurrency Issues)");
+					client.Client.Close();
 				}
 			}
 			catch (SocketException e)
 			{
-				if (client.RemoteEndPoint == null)
+				if (client.Client.RemoteEndPoint == null)
 				{
 					Console.WriteLine("A severe error has occurred with the client. Data: {0}", e.Data);
 					return;
 				}
-				Console.WriteLine("Error: A client has disconnected from {0}. ", (client.RemoteEndPoint as IPEndPoint).Address);
+				Console.WriteLine("Error: A client has disconnected from {0}. ", (client.Client.RemoteEndPoint as IPEndPoint).Address);
 			}
 		}
 	}

@@ -47,6 +47,8 @@ namespace MessagingServer.Utilities
 					var buffer = new byte[4 - stream.Length];
 					var bytesRecieved = clientSocket.Receive(buffer);
 					stream.Write(buffer, 0, bytesRecieved);
+					if (!CheckSocketConnected(clientSocket))
+						return -1;
 				}
 				return BitConverter.ToInt32(stream.ToArray(), 0);
 			}
@@ -60,6 +62,9 @@ namespace MessagingServer.Utilities
 		/// <returns>The message</returns>
 		public static string RecieveMessage(Socket clientSocket, int messageLength)
 		{
+			if (messageLength == -1)
+				return null;
+
 			var bytes = new byte[messageLength];
 
 			using (var stream = new MemoryStream())
@@ -69,10 +74,21 @@ namespace MessagingServer.Utilities
 				{
 					var bytesRecieved = clientSocket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
 					stream.Write(buffer, 0, bytesRecieved);
+					if (!CheckSocketConnected(clientSocket))
+						return null;
 				}
 
 				return Encoding.UTF8.GetString(stream.ToArray());
 			}
+		}
+
+		private static bool CheckSocketConnected(Socket clientSocket)
+		{
+			bool isBlocking = clientSocket.Poll(1000, SelectMode.SelectRead);
+			bool isAvailable = (clientSocket.Available == 0);
+			if (isBlocking && isAvailable)
+				return false;
+			return true;
 		}
 	}
 }
