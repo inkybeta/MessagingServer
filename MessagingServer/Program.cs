@@ -94,6 +94,8 @@ namespace MessagingServer
 			{
 				Thread value;
 				ClientThreads.TryRemove(username, out value);
+				IMessagingClient client;
+				Clients.TryRemove(username, out client);
 				value.Join();
 			}
 		}
