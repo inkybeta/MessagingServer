@@ -22,6 +22,7 @@ namespace MessagingServer.Tasks
 		{
 			Program.ServerSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 			Program.ServerProperties = new ConcurrentDictionary<string, string>();
+			Program.ServerDependencies = new ConcurrentDictionary<string, string>();
 			Program.ServerCommands = new ConcurrentDictionary<string, ServerCommand>();
 			Program.Clients = new ConcurrentDictionary<string, IMessagingClient>();
 			Program.InitializeCommands = new ConcurrentDictionary<string, InitializeCommand>();
@@ -62,9 +63,34 @@ namespace MessagingServer.Tasks
 			{
 				Console.WriteLine("Error: {0}", exception.Data);
 				Console.WriteLine("Using default values.");
-				Program.ServerProperties.TryAdd("SSLENABLED", "false");
-				Program.ServerProperties.TryAdd("SERVERVENDOR", "inkynet");
-				Console.WriteLine("An invalid file was found. Using a temporary file.");
+			}
+			Console.WriteLine("The server has been initiated with the following properties:");
+			Console.WriteLine(JsonConvert.SerializeObject(Program.ServerProperties));
+		}
+
+		public static void LoadDependencies()
+		{
+			try
+			{
+				Console.WriteLine(
+					"Enter the name of the file that holds the server dependencies. Go to http://messaging.explodingbytes.com/documentation to find out more");
+				var file = Console.ReadLine();
+				string fileName = String.IsNullOrEmpty(file) ? "dependencies.json" : file;
+				if (!File.Exists(fileName))
+				{
+					StreamWriter writer = new StreamWriter(File.Create(fileName));
+					writer.Write("{}");
+					writer.Close();
+				}
+				Program.ServerDependencies =
+					new ConcurrentDictionary<string, string>(
+						Program.ServerProperties.Concat(
+							JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(fileName))));
+			}
+			catch (JsonException exception)
+			{
+				Console.WriteLine("Error: {0}", exception.Data);
+				Console.WriteLine("Using default values.");
 			}
 			Console.WriteLine("The server has been initiated with the following properties:");
 			Console.WriteLine(JsonConvert.SerializeObject(Program.ServerProperties));

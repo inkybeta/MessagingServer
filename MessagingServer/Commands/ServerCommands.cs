@@ -48,6 +48,35 @@ namespace MessagingServer.Commands
 			Program.ClientThreads.TryAdd(username, thread);
 		}
 
+		public static void SecureConnect(Socket clientSocket, params string[] value)
+		{
+			if (Program.ServerProperties["SSLENABLED"] == "false")
+			{
+				SocketUtilities.SendInvalid(clientSocket, "SSL isn't enabled on this server");
+				clientSocket.Close();
+				return;
+			}
+			if (value.Length != 2)
+			{
+				SocketUtilities.SendInvalid(clientSocket, "Incorrect number of parameters");
+				clientSocket.Close();
+				return;
+			}
+			string username = value[0];
+			string client = value[1];
+
+			if (Program.Clients.ContainsKey(username))
+			{
+				var message = String.Format("INVALIDUN {0}", username);
+				var fullMessage = Encoding.UTF8.GetBytes(message);
+				clientSocket.Send(BitConverter.GetBytes(fullMessage.Length), 4, SocketFlags.None);
+				clientSocket.Send(fullMessage, fullMessage.Length, SocketFlags.None);
+				clientSocket.Close();
+				return;
+			}
+			var service = new UserClientService(new Secure);
+		}
+
 		public static void RequestInfo(Socket clientSocket, params string[] value)
 		{
 			if (value.Length != 0)
@@ -56,7 +85,9 @@ namespace MessagingServer.Commands
 				clientSocket.Close();
 				return;
 			}
-			byte[] json = Encoding.UTF8.GetBytes(String.Format("INFORESP {0}", JsonConvert.SerializeObject(Program.ServerProperties.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))));
+			byte[] json =
+				Encoding.UTF8.GetBytes(String.Format("INFORESP {0}",
+					JsonConvert.SerializeObject(Program.ServerProperties.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))));
 			clientSocket.Send(BitConverter.GetBytes(json.Length), 4, SocketFlags.None);
 			clientSocket.Send(json, json.Length, SocketFlags.None);
 			Thread thread = new Thread(ClientManagement.ManageAnonymous);

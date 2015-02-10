@@ -26,6 +26,7 @@ namespace MessagingServer
 		internal static ConcurrentDictionary<string, Thread> ClientThreads { get; set; }
 
 		internal static ConcurrentDictionary<string, string> ServerProperties { get; set; }
+		internal static ConcurrentDictionary<string, string> ServerDependencies { get; set; }
 		internal static ConcurrentDictionary<string, ServerCommand> ServerCommands { get; set; }
 		internal static ConcurrentDictionary<string, InitializeCommand> InitializeCommands { get; set; }
 		internal static ConcurrentDictionary<string, ClientCommand> ClientCommands { get; set; }

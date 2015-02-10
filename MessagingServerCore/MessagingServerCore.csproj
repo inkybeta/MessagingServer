@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="CommandParameterPair.cs" />
     <Compile Include="Interfaces\IClient.cs" />
+    <Compile Include="SecureClient.cs" />
     <Compile Include="UserClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

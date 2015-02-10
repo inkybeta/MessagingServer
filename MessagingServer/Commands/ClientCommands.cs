@@ -42,6 +42,13 @@ namespace MessagingServer.Commands
 				return new CommandParameterPair("INVOP", "Only one value (true/false) may be sent!");
 			foreach (IMessagingClient client in Program.Clients.Values)
 			{
+				if (client.UserName == username)
+				{
+					if (value[0] == "true")
+						client.Client.IsOnline = true;
+					else
+						client.Client.IsOnline = false;
+				}
 				client.SendCommand(new CommandParameterPair("AFKUSER", username, value[0]));
 			}
 			return null;
