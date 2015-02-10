@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandParameterPair.cs" />
+    <Compile Include="Exceptions\SslServerException.cs" />
     <Compile Include="Interfaces\IClient.cs" />
     <Compile Include="SecureClient.cs" />
     <Compile Include="UserClient.cs" />

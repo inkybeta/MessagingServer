@@ -144,5 +144,10 @@ namespace MessagingServerCore
 				return false;
 			return true;
 		}
+
+		public void Abort()
+		{
+			ClientSocket.Close();
+		}
     }
 }

@@ -11,14 +11,17 @@ namespace MessagingServerBusiness
 
 		public string UserName { get { return Client.UserName; } set { Client.UserName = value; } }
 		public bool IsAfk { get { return Client.IsOnline; } set { Client.IsOnline = value; } }
+		public bool IsSecure { get; set; }
 
 		/// <summary>
 		/// Creates a new service off of a client socket.
 		/// </summary>
 		/// <param name="client">The client socket</param>
-	    public UserClientService(UserClient client)
+		/// <param name="isSecure">Whether the client is secure</param>
+	    public UserClientService(IClient client, bool isSecure = false)
 		{
 			Client = client;
+			IsSecure = isSecure;
 		}
 
 		/// <summary>
@@ -53,6 +56,16 @@ namespace MessagingServerBusiness
 			Client.SendCommand(pair);
 		}
 
+	    public void Abort(string reason)
+	    {
+		    var pair = new CommandParameterPair("DISCONN", Uri.EscapeDataString(reason));
+		    Client.Abort();
+	    }
+
+	    public void Alert(string message, int priority)
+	    {
+		    Client.SendCommand(new CommandParameterPair("ALERT", message, priority.ToString()));
+	    }
 		/// <summary>
 		/// Reserved for the server
 		/// </summary>

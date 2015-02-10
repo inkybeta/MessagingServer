@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using MessagingServer.Tasks;
+using MessagingServer.Utilities;
+using MessagingServerBusiness;
 using MessagingServerBusiness.Interfaces;
 using MessagingServerCore;
 
@@ -39,14 +42,14 @@ namespace MessagingServer
 			//Initialize the server
 			InitializeServer.Start();
 			
-			Console.WriteLine("Press q to stop the server");
 			Console.WriteLine("Server is starting");
 			foreach (Thread thread in AcceptThreads)
 			{
 				thread.Start();
 			}
 			Console.WriteLine("Server has been started");
-
+			ConsoleUtilities.PrintInformation("Go to http://messaging.explodingbytes.com/console/keys for more information on what to do.");
+			ConsoleUtilities.PrintInformation("Press 'q' to stop the server.");
 			while (true)
 			{
 				var key = Console.ReadKey();
@@ -54,7 +57,7 @@ namespace MessagingServer
 				if (key == new ConsoleKeyInfo('q', ConsoleKey.Q, false, false, false))
 				{
 					ServerState = 0;
-					Console.WriteLine("Server is stopping");
+					ConsoleUtilities.PrintInformation("Server is stopping");
 					ServerSocket.Close();
 					break;
 				}
@@ -75,12 +78,22 @@ namespace MessagingServer
 					Console.WriteLine("Users:");
 					foreach (IMessagingClient client in Clients.Values)
 					{
-						Console.WriteLine("Username: {0} | Type: {1} | IsOnline: {2}", client.UserName, client.Client.ClientType, client.IsAfk);
+						Console.WriteLine("Username: {0, 10} | Type: {1, 10} | IsOnline: {2, 10}", client.UserName, client.Client.ClientType, client.IsAfk);
 					}
 					ServerThread.ResumeThreads();
 				}
 			}
 
+			foreach (IMessagingClient service in Clients.Values)
+			{
+				service.SendShutdown("The server is shutting down");
+			}
+
+			foreach (IMessagingClient service in Clients.Values)
+			{
+				service.Abort("The server is shutting down.");
+			}
+			Console.WriteLine("You may exit safely at this point by ending the process");
 			// Clean up code
 			foreach (KeyValuePair<string, Thread> thread in ClientThreads)
 			{
@@ -99,19 +112,33 @@ namespace MessagingServer
 
 		public static void Disconnect(ThreadType type, string username)
 		{
-			if (type == ThreadType.AnonymousThread)
+			try
 			{
-				Thread value;
-				AnonymousThreads.TryRemove(username, out value);
-				value.Join();
+				if (type == ThreadType.AnonymousThread)
+				{
+					Thread value;
+					AnonymousThreads.TryRemove(username, out value);
+					value.Join();
+				}
+				if (type == ThreadType.ClientThread)
+				{
+					Thread value;
+					ClientThreads.TryRemove(username, out value);
+					IMessagingClient client;
+					Clients.TryRemove(username, out client);
+					value.Join();
+				}
 			}
-			if (type == ThreadType.ClientThread)
+			catch (Exception e)
 			{
-				Thread value;
-				ClientThreads.TryRemove(username, out value);
-				IMessagingClient client;
-				Clients.TryRemove(username, out client);
-				value.Join();
+				Guid guid = Guid.NewGuid();
+				ConsoleUtilities.PrintCritical("A major server error has occured. Report to developer immediately. Writing to file {0}.error", guid);
+				StreamWriter writer = new StreamWriter(String.Format("{0}.error", guid));
+				writer.WriteLine(e.Message);
+				foreach (var i in e.Data)
+				{
+					writer.WriteLine("{0}", i);
+				}
 			}
 		}
 	}

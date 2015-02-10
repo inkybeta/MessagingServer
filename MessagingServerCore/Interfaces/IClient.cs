@@ -18,5 +18,6 @@ namespace MessagingServerCore.Interfaces
 		string EncodeMessage(CommandParameterPair pair);
 		void SendInvalid(string message);
 		void CloseConnection();
+		void Abort();
 	}
 }

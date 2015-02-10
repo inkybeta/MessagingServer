@@ -8,6 +8,7 @@ using MessagingServer.Management;
 using MessagingServer.Models;
 using MessagingServer.Utilities;
 using MessagingServerBusiness;
+using MessagingServerBusiness.Interfaces;
 using MessagingServerCore;
 using Newtonsoft.Json;
 
@@ -26,7 +27,7 @@ namespace MessagingServer.Commands
 			string username = parameters[0];
 			string client = parameters[1];
 
-			if (Program.Clients.ContainsKey(username))
+			if (Program.Clients.ContainsKey(username) | username.Trim().ToLower() == "system" | username.Length > 15)
 			{
 				var message = String.Format("INVALIDUN {0}", username);
 				var fullMessage = Encoding.UTF8.GetBytes(message);
@@ -41,6 +42,9 @@ namespace MessagingServer.Commands
 			byte[] connected = Encoding.UTF8.GetBytes("CONNECTED");
 			clientSocket.Send(BitConverter.GetBytes(connected.Length), 4, SocketFlags.None);
 			clientSocket.Send(connected, connected.Length, SocketFlags.None);
+
+			foreach(IMessagingClient sclient in Program.Clients.Values)
+				sclient.Alert(String.Format("{0} has connected", username), 3);
 
 			Program.Clients.TryAdd(username, service);
 			Thread thread = new Thread(ClientManagement.ManageClient);
@@ -74,7 +78,26 @@ namespace MessagingServer.Commands
 				clientSocket.Close();
 				return;
 			}
-			var service = new UserClientService(new Secure);
+			string certFile;
+			if (!Program.ServerDependencies.TryGetValue("SSLCERT", out certFile))
+			{
+				SocketUtilities.SendInvalid(clientSocket, "SSL isn't properly supported on this server");
+				clientSocket.Close();
+				return;
+			}
+			string password;
+			if (!Program.ServerDependencies.TryGetValue("SSLPASS", out password))
+			{
+				SocketUtilities.SendInvalid(clientSocket, "SSL isn't properyly supported on this serverserver");
+				clientSocket.Close();
+				return;
+			}
+			var service = new UserClientService(new SecureClient(clientSocket, certFile, username, client, new ConcurrentDictionary<string, string>(), new ConcurrentDictionary<string, string>(), DateTime.UtcNow, password), true);
+			service.SendCommand(new CommandParameterPair("CONNECTED"));
+			Program.Clients.TryAdd(username, service);
+			var thread = new Thread(ClientManagement.ManageClient);
+			thread.Start(service);
+			Program.ClientThreads.TryAdd(username, thread);
 		}
 
 		public static void RequestInfo(Socket clientSocket, params string[] value)

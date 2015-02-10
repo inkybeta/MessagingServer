@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -21,7 +22,7 @@ namespace MessagingServer.Management
 				{
 					if (Program.ServerState == 0)
 					{
-						Console.WriteLine("Thread has been ended");
+						ConsoleUtilities.PrintCritical("Thread has been ended");
 						return;
 					}
 					if (Program.ServerState == 2)
@@ -92,7 +93,7 @@ namespace MessagingServer.Management
 				}
 				catch (SocketException e)
 				{
-					Console.WriteLine("Improper disconnect. Data: {0}", e.Data);
+					ConsoleUtilities.PrintWarning("Improper disconnect. Data: {0}", e.Data);
 				}
 			}
 		}
@@ -116,7 +117,6 @@ namespace MessagingServer.Management
 					CommandParameterPair message = client.RecieveMessage();
 					if (message == null)
 					{
-						Console.WriteLine("A user has disconnected");
 						Program.Disconnect(ThreadType.ClientThread, client.UserName);
 						return;
 					}
@@ -125,7 +125,8 @@ namespace MessagingServer.Management
 					{
 						parameters.Append(param + " ");
 					}
-					Console.WriteLine("Command {0} was sent from the user {1} with parameters '{2}'", message.Command, client.UserName,
+					ConsoleUtilities.PrintCommand("Command {0} was sent from the user {1} with parameters '{2}'", message.Command,
+						client.UserName,
 						parameters);
 					ClientCommand command;
 					if (Program.ClientCommands.TryGetValue(message.Command, out command))
@@ -152,7 +153,14 @@ namespace MessagingServer.Management
 				}
 				catch (SocketException e)
 				{
-					Console.WriteLine("User {0} has disconnected. Data: {1}", client.Client.UserName, e.Data);
+					ConsoleUtilities.PrintWarning("User {0} has disconnected. Data: {1}", client.Client.UserName, e.Data);
+					Program.Disconnect(ThreadType.ClientThread, client.Client.UserName);
+					return;
+				}
+				catch (NetworkInformationException e)
+				{
+					ConsoleUtilities.PrintWarning("A user has disconnected");
+					client.Disconnect("An unknown error has occurred.");
 					Program.Disconnect(ThreadType.ClientThread, client.Client.UserName);
 					return;
 				}

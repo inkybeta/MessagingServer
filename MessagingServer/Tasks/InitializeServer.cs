@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Threading;
 using MessagingServer.Commands;
 using MessagingServer.Management;
+using MessagingServer.Utilities;
 using MessagingServerBusiness.Interfaces;
 using Newtonsoft.Json;
 
@@ -20,6 +21,7 @@ namespace MessagingServer.Tasks
 		/// </summary>
 		public static void InitializeFields()
 		{
+			Console.WriteLine("Setting up the messaging server...");
 			Program.ServerSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 			Program.ServerProperties = new ConcurrentDictionary<string, string>();
 			Program.ServerDependencies = new ConcurrentDictionary<string, string>();
@@ -30,6 +32,10 @@ namespace MessagingServer.Tasks
 			Program.ClientThreads = new ConcurrentDictionary<string, Thread>();
 			Program.AcceptThreads = new ConcurrentBag<Thread>();
 			Program.AnonymousThreads = new ConcurrentDictionary<string, Thread>();
+			Console.WriteLine("Server has been initialized.");
+			Console.WriteLine("This is a messaging server v1.0a");
+			ConsoleUtilities.PrintInformation("Bugs can be reported at http://messaging.explodingbytes.com/bugs/report");
+			ConsoleUtilities.PrintInformation("Documentation can be found on http://messaging.explodingbytes.com/documentation");
 		}
 
 		/// <summary>
@@ -40,7 +46,7 @@ namespace MessagingServer.Tasks
 			try
 			{
 				Console.WriteLine("The server is starting");
-				Console.WriteLine("Type the name of the file that holds the server properties");
+				ConsoleUtilities.PrintRequest("Type the name of the file that holds the server properties");
 
 				//Read the file of the properties
 				var file = Console.ReadLine();
@@ -72,8 +78,10 @@ namespace MessagingServer.Tasks
 		{
 			try
 			{
-				Console.WriteLine(
-					"Enter the name of the file that holds the server dependencies. Go to http://messaging.explodingbytes.com/documentation to find out more");
+				ConsoleUtilities.PrintRequest(
+					"Enter the name of the file that holds the server dependencies.");
+				ConsoleUtilities.PrintInformation(
+					"Go to http://messaging.explodingbytes.com/documentation/dependencies to find out more");
 				var file = Console.ReadLine();
 				string fileName = String.IsNullOrEmpty(file) ? "dependencies.json" : file;
 				if (!File.Exists(fileName))
@@ -84,16 +92,17 @@ namespace MessagingServer.Tasks
 				}
 				Program.ServerDependencies =
 					new ConcurrentDictionary<string, string>(
-						Program.ServerProperties.Concat(
+						Program.ServerDependencies.Concat(
 							JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(fileName))));
 			}
+
 			catch (JsonException exception)
 			{
-				Console.WriteLine("Error: {0}", exception.Data);
-				Console.WriteLine("Using default values.");
+				ConsoleUtilities.PrintCritical("Error: {0}", exception.Data);
+				ConsoleUtilities.PrintCritical("Using default values.");
 			}
-			Console.WriteLine("The server has been initiated with the following properties:");
-			Console.WriteLine(JsonConvert.SerializeObject(Program.ServerProperties));
+			Console.WriteLine("The server has been initiated with the following dependencies:");
+			Console.WriteLine(JsonConvert.SerializeObject(Program.ServerDependencies));
 		}
 
 		public static void LoadThreads()
@@ -107,8 +116,9 @@ namespace MessagingServer.Tasks
 			Program.ClientCommands.TryAdd("INFOREQ", ClientCommands.RequestInfo);
 			Program.ClientCommands.TryAdd("AFK", ClientCommands.BroadcastAfkUser);
 			Program.ClientCommands.TryAdd("USERSREQ", ClientCommands.UsersRequest);
+			Program.ClientCommands.TryAdd("STATUS", ClientCommands.SetStatus);
 
-			Console.WriteLine("What port should the server be bound to? (2015 is default)");
+			ConsoleUtilities.PrintRequest("What port should the server be bound to? (2015 is default)");
 			int port;
 			if (!Int32.TryParse(Console.ReadLine(), out port))
 				port = 2015;
@@ -118,7 +128,7 @@ namespace MessagingServer.Tasks
 			Program.ServerSocket.Bind(new IPEndPoint(IPAddress.Loopback, port));
 			Program.ServerSocket.Listen(Int32.MaxValue);
 
-			Console.WriteLine("How many threads should be allocated to accepting new clients? (Default is 2)");
+			ConsoleUtilities.PrintRequest("How many threads should be allocated to accepting new clients? (Default is 2)");
 			int acceptThreads;
 			if (!Int32.TryParse(Console.ReadLine(), out acceptThreads))
 				acceptThreads = 2;
@@ -134,6 +144,7 @@ namespace MessagingServer.Tasks
 		{
 			InitializeFields();
 			LoadProperites();
+			LoadDependencies();
 			LoadThreads();
 		}
 	}

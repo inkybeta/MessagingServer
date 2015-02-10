@@ -39,6 +39,10 @@ namespace MessagingServerBusiness.Interfaces
 
 		void SendInvalid(string message);
 
+		void Abort(string reason);
+
+		void Alert(string message, int priority);
+
 		CommandParameterPair RecieveMessage();
 	}
 }
