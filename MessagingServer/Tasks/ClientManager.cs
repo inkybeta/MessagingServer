@@ -12,7 +12,6 @@ namespace MessagingServer.Tasks
 		public static void ManageClients()
 		{
 		}
-
 		public static void ManageAnonymous()
 		{
 		}
