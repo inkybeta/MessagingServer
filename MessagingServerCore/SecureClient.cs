@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 using MessagingServerCore.Interfaces;
 
 namespace MessagingServerCore
@@ -42,9 +39,9 @@ namespace MessagingServerCore
 
 		public DateTime TimeLastUsed { get; set; }
 
-		public SecureClient(Socket clientSocket, string certFile, string userName, string clientType, ConcurrentDictionary<string, string> groupAndRole, ConcurrentDictionary<string, string> properties, DateTime timeLastUsed, string password)
+		public SecureClient(NetworkStream stream, string certFile, string userName, string clientType, ConcurrentDictionary<string, string> groupAndRole, ConcurrentDictionary<string, string> properties, DateTime timeLastUsed, string password)
 		{
-			Stream = new SslStream(new NetworkStream(clientSocket));
+			Stream = new SslStream(stream);
 			Stream.AuthenticateAsServer(String.IsNullOrEmpty(password)
 				? new X509Certificate(certFile)
 				: new X509Certificate(certFile, password));

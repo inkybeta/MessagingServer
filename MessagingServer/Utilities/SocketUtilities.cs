@@ -2,30 +2,32 @@
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using MessagingServerCore;
 
 namespace MessagingServer.Utilities
 {
 	public class SocketUtilities
 	{
-		public static void SendError(Socket clientSocket, params string[] message)
+		public static void SendError(NetworkStream clientSocket, params string[] message)
 		{
 			string fullMessage = String.Format("ERROR {0}", message[0]);
 			byte[] byteMessage = Encoding.UTF8.GetBytes(Uri.EscapeDataString(fullMessage));
 			byte[] messageLength = BitConverter.GetBytes(byteMessage.Length);
-			clientSocket.Send(messageLength, 4, SocketFlags.None);
-			clientSocket.Send(byteMessage, byteMessage.Length, SocketFlags.None);
+			clientSocket.Write(messageLength, 0, 4);
+			clientSocket.Write(byteMessage, 0, 4);
+			clientSocket.Flush();
 		}
 
-		public static void SendInvalid(Socket clientSocket, params string[] message)
+		public static void SendInvalid(NetworkStream clientSocket, params string[] message)
 		{
 			string fullMessage = String.Format("INVOP {0}", message[0]);
 			byte[] byteMessage = Encoding.UTF8.GetBytes(Uri.EscapeDataString(fullMessage));
 			byte[] messageLength = BitConverter.GetBytes(byteMessage.Length);
-			clientSocket.Send(messageLength, 4, SocketFlags.None);
-			clientSocket.Send(byteMessage, byteMessage.Length, SocketFlags.None);
+			clientSocket.Write(messageLength, 0, 4);
+			clientSocket.Write(byteMessage, 0, 4);
 		}
 
-		public static void SendShutdown(Socket clientSocket, params string[] message)
+		public static void SendShutdown(NetworkStream clientSocket, params string[] message)
 		{
 			if (message.Length != 2)
 			{
@@ -34,21 +36,26 @@ namespace MessagingServer.Utilities
 			}
 			string fullMessage = String.Format("SDONW {0}&{1}", Uri.EscapeDataString(message[0]), Uri.EscapeDataString(message[1]));
 			byte[] byteMessage = Encoding.UTF8.GetBytes(Uri.EscapeDataString(fullMessage));
-			clientSocket.Send(BitConverter.GetBytes(byteMessage.Length), 4, SocketFlags.None);
-			clientSocket.Send(byteMessage, byteMessage.Length, SocketFlags.None);
+			clientSocket.Write(BitConverter.GetBytes(byteMessage.Length), 0, 4);
+			clientSocket.Write(byteMessage, 0, 4);
 		}
 
-		public static int RecieveMessageLength(Socket clientSocket)
+		public static void SendCommand(NetworkStream clientStream, CommandParameterPair pair)
+		{
+			byte[] message = Encoding.UTF8.GetBytes(MessageUtilites.EncodeMessage(pair));
+			clientStream.Write(BitConverter.GetBytes(message.Length), 0, 4);
+			clientStream.Write(message, 0, message.Length);
+		}
+
+		public static int RecieveMessageLength(NetworkStream clientSocket)
 		{
 			using (var stream = new MemoryStream())
 			{
 				while (stream.Length != 4)
 				{
 					var buffer = new byte[4 - stream.Length];
-					var bytesRecieved = clientSocket.Receive(buffer);
+					var bytesRecieved = clientSocket.Read(buffer, 0, buffer.Length);
 					stream.Write(buffer, 0, bytesRecieved);
-					if (!CheckSocketConnected(clientSocket))
-						return -1;
 				}
 				return BitConverter.ToInt32(stream.ToArray(), 0);
 			}
@@ -60,7 +67,7 @@ namespace MessagingServer.Utilities
 		/// <param name="clientSocket">The socket connecting to the client</param>
 		/// <param name="messageLength">The length of the message</param>
 		/// <returns>The message</returns>
-		public static string RecieveMessage(Socket clientSocket, int messageLength)
+		public static string RecieveMessage(NetworkStream clientSocket, int messageLength)
 		{
 			if (messageLength == -1)
 				return null;
@@ -72,23 +79,12 @@ namespace MessagingServer.Utilities
 				var buffer = new byte[512];
 				while (stream.Length != messageLength)
 				{
-					var bytesRecieved = clientSocket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
+					var bytesRecieved = clientSocket.Read(buffer, 0, buffer.Length);
 					stream.Write(buffer, 0, bytesRecieved);
-					if (!CheckSocketConnected(clientSocket))
-						return null;
 				}
 
 				return Encoding.UTF8.GetString(stream.ToArray());
 			}
-		}
-
-		private static bool CheckSocketConnected(Socket clientSocket)
-		{
-			bool isBlocking = clientSocket.Poll(1000, SelectMode.SelectRead);
-			bool isAvailable = (clientSocket.Available == 0);
-			if (isBlocking && isAvailable)
-				return false;
-			return true;
 		}
 	}
 }

@@ -6,7 +6,7 @@ namespace MessagingServer.Utilities
 {
 	public static class MessageUtilites
 	{
-		public static CommandParameterPair RecieveMessage(string input)
+		public static CommandParameterPair DecodeMessage(string input)
 		{
 			string[] messageAndValue = input.Split(' ');
 			if (messageAndValue.Length > 2)
@@ -26,15 +26,15 @@ namespace MessagingServer.Utilities
 			return new CommandParameterPair(command, new string[0]);
 		}
 
-		public static string CreateMessage(CommandParameterPair message)
+		public static string EncodeMessage(CommandParameterPair message)
 		{
 			if (message.ParameterLength == 0)
 				return message.Command;
 			StringBuilder builder = new StringBuilder();
 			builder.Append(String.Format("{0} ", message.Command));
 			foreach (string parameter in message.Parameters)
-				builder.Append(String.Format("{0}&", parameter));
-			return builder.ToString();
+				builder.Append(String.Format("{0}&", Uri.EscapeDataString(parameter)));
+			return builder.ToString().Substring(0, builder.Length - 1);
 		} 
 	}
 }

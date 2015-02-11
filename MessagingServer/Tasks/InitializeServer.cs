@@ -22,7 +22,6 @@ namespace MessagingServer.Tasks
 		public static void InitializeFields()
 		{
 			Console.WriteLine("Setting up the messaging server...");
-			Program.ServerSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 			Program.ServerProperties = new ConcurrentDictionary<string, string>();
 			Program.ServerDependencies = new ConcurrentDictionary<string, string>();
 			Program.ServerCommands = new ConcurrentDictionary<string, ServerCommand>();
@@ -57,6 +56,7 @@ namespace MessagingServer.Tasks
 					writer.Write("{" +
 					             "'SSLENABLED':'false'," +
 					             "'SERVERVENDOR': 'inkynet'" +
+								 "'SERVERNAME' : 'inkynettest'" +
 					             "}");
 					writer.Close();
 				}
@@ -123,10 +123,8 @@ namespace MessagingServer.Tasks
 			if (!Int32.TryParse(Console.ReadLine(), out port))
 				port = 2015;
 			Console.WriteLine("The server has started on {0}", port);
-
-			//Start the socket
-			Program.ServerSocket.Bind(new IPEndPoint(IPAddress.Loopback, port));
-			Program.ServerSocket.Listen(Int32.MaxValue);
+			Program.ServerSocket = new TcpListener(new IPEndPoint(IPAddress.Loopback, 2015));
+			Program.ServerSocket.Start();
 
 			ConsoleUtilities.PrintRequest("How many threads should be allocated to accepting new clients? (Default is 2)");
 			int acceptThreads;
@@ -135,7 +133,7 @@ namespace MessagingServer.Tasks
 
 			for (int i = 0; i < acceptThreads; i++)
 			{
-				Thread thread = new Thread(ClientManagement.AcceptNewClients);
+				Thread thread = new Thread(AcceptClientManagement.AcceptNewClients);
 				Program.AcceptThreads.Add(thread);
 			}
 		}

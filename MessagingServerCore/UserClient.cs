@@ -26,7 +26,9 @@ namespace MessagingServerCore
 			set { _isOnline = value; }
 		}
 		[JsonIgnore]
-		private Socket ClientSocket { get; set; }
+		private TcpClient ClientSocket { get; set; }
+		[JsonIgnore]
+		private NetworkStream Stream { get; set; }
 		[JsonIgnore]
 		public ConcurrentDictionary<string, string> GroupAndRole { get; set; }
 		[JsonIgnore]
@@ -34,9 +36,10 @@ namespace MessagingServerCore
 		[JsonIgnore]
 		public DateTime TimeLastUsed { get; set; }
 
-	    public UserClient(string userName, string clientType, Socket clientSocket, ConcurrentDictionary<string, string> groupAndRole, ConcurrentDictionary<string, string> properties, DateTime time)
+	    public UserClient(string userName, string clientType, TcpClient clientSocket, ConcurrentDictionary<string, string> groupAndRole, ConcurrentDictionary<string, string> properties, DateTime time)
 	    {
 		    UserName = userName;
+		    Stream = clientSocket.GetStream();
 		    ClientType = clientType;
 		    ClientSocket = clientSocket;
 		    GroupAndRole = groupAndRole;
@@ -49,14 +52,14 @@ namespace MessagingServerCore
 			if (command.ParameterLength == 0)
 			{
 				byte[] fullMessage = Encoding.UTF8.GetBytes(command.Command);
-				ClientSocket.Send(BitConverter.GetBytes(fullMessage.Length), 4, SocketFlags.None);
-				ClientSocket.Send(fullMessage, fullMessage.Length, SocketFlags.None);
+				Stream.Write(BitConverter.GetBytes(fullMessage.Length), 0, 4);
+				Stream.Write(fullMessage, 0, fullMessage.Length);
 				return;
 			}
 			string smessage = EncodeMessage(command);
 			byte[] byteMessage = Encoding.UTF8.GetBytes(smessage);
-			ClientSocket.Send(BitConverter.GetBytes(byteMessage.Length), 4, SocketFlags.None);
-			ClientSocket.Send(byteMessage, byteMessage.Length, SocketFlags.None);
+			Stream.Write(BitConverter.GetBytes(byteMessage.Length), 0, 4);
+			Stream.Write(byteMessage, 0, byteMessage.Length);
 		}
 
 		public CommandParameterPair RecieveCommand()
@@ -69,7 +72,7 @@ namespace MessagingServerCore
 					while (stream.Length != 4)
 					{
 						var buffer = new byte[4 - stream.Length];
-						int bytesRecieved = ClientSocket.Receive(buffer);
+						int bytesRecieved = Stream.Read(buffer, 0, 4);
 						stream.Write(buffer, 0, bytesRecieved);
 						if (!CheckIfConnected())
 							return null;
@@ -81,7 +84,7 @@ namespace MessagingServerCore
 					while (stream.Length != messageLength)
 					{
 						var buffer = new byte[512];
-						int bytesRecieved = ClientSocket.Receive(buffer);
+						int bytesRecieved = Stream.Read(buffer, 0, buffer.Length);
 						stream.Write(buffer, 0, bytesRecieved);
 						if (!CheckIfConnected())
 							return null;
@@ -133,16 +136,12 @@ namespace MessagingServerCore
 
 		public void CloseConnection()
 		{
-			ClientSocket.Disconnect(false);
+			ClientSocket.Close();
 		}
 
 		private bool CheckIfConnected()
 		{
-			bool isBlocking = ClientSocket.Poll(1000, SelectMode.SelectRead);
-			bool isAvailable = (ClientSocket.Available == 0);
-			if (isBlocking && isAvailable)
-				return false;
-			return true;
+			return ClientSocket.Connected;
 		}
 
 		public void Abort()

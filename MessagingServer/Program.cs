@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using MessagingServer.Tasks;
 using MessagingServer.Utilities;
-using MessagingServerBusiness;
 using MessagingServerBusiness.Interfaces;
 using MessagingServerCore;
 
@@ -16,11 +15,11 @@ namespace MessagingServer
 {
 	public delegate CommandParameterPair ClientCommand(string username, params string[] parameters);
 	public delegate string ServerCommand(params string[] input);
-	public delegate void InitializeCommand(Socket clientSocket, params string[] value);
+	public delegate void InitializeCommand(TcpClient clientSocket, params string[] value);
 
 	internal class Program
 	{
-		internal static Socket ServerSocket { get; set; }
+		internal static TcpListener ServerSocket { get; set; }
 
 
 		// The bag of threads for managing clients
@@ -58,7 +57,7 @@ namespace MessagingServer
 				{
 					ServerState = 0;
 					ConsoleUtilities.PrintInformation("Server is stopping");
-					ServerSocket.Close();
+					ServerSocket.Stop();
 					break;
 				}
 				if (key == new ConsoleKeyInfo('u', ConsoleKey.U, false, false, false))
@@ -78,7 +77,7 @@ namespace MessagingServer
 					Console.WriteLine("Users:");
 					foreach (IMessagingClient client in Clients.Values)
 					{
-						Console.WriteLine("Username: {0, 10} | Type: {1, 10} | IsOnline: {2, 10}", client.UserName, client.Client.ClientType, client.IsAfk);
+						Console.WriteLine("Username: {0, 15} | Type: {1, 15} | IsOnline: {2, 15}", client.UserName, client.Client.ClientType, client.IsAfk);
 					}
 					ServerThread.ResumeThreads();
 				}
@@ -93,6 +92,7 @@ namespace MessagingServer
 			{
 				service.Abort("The server is shutting down.");
 			}
+			Thread.Sleep(10000);
 			Console.WriteLine("You may exit safely at this point by ending the process");
 			// Clean up code
 			foreach (KeyValuePair<string, Thread> thread in ClientThreads)
@@ -126,6 +126,10 @@ namespace MessagingServer
 					ClientThreads.TryRemove(username, out value);
 					IMessagingClient client;
 					Clients.TryRemove(username, out client);
+					foreach (IMessagingClient sclient in Clients.Values)
+					{
+						sclient.Alert(String.Format("{0} has diconnected", username), 3);
+					}
 					value.Join();
 				}
 			}

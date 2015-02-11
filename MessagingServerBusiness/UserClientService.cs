@@ -9,6 +9,7 @@ namespace MessagingServerBusiness
     {
 		public IClient Client { get; set; }
 
+		public string Status { get { return Client.Status; } set { Client.Status = value; } }
 		public string UserName { get { return Client.UserName; } set { Client.UserName = value; } }
 		public bool IsAfk { get { return Client.IsOnline; } set { Client.IsOnline = value; } }
 		public bool IsSecure { get; set; }
@@ -30,7 +31,7 @@ namespace MessagingServerBusiness
 		/// <param name="send">The message to send</param>
 	    public void SendShutdown(string send)
 	    {
-		    var pair = new CommandParameterPair("SDOWN {0}&{1}", Uri.EscapeDataString(send), "0");
+		    var pair = new CommandParameterPair("SDOWN", Uri.EscapeDataString(send), "0");
 		    Client.SendCommand(pair);
 			Client.CloseConnection();
 	    }
