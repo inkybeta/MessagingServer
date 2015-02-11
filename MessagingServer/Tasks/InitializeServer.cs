@@ -123,7 +123,7 @@ namespace MessagingServer.Tasks
 			if (!Int32.TryParse(Console.ReadLine(), out port))
 				port = 2015;
 			Console.WriteLine("The server has started on {0}", port);
-			Program.ServerSocket = new TcpListener(new IPEndPoint(IPAddress.Loopback, 2015));
+			Program.ServerSocket = new TcpListener(IPAddress.Any, port);
 			Program.ServerSocket.Start();
 
 			ConsoleUtilities.PrintRequest("How many threads should be allocated to accepting new clients? (Default is 2)");
