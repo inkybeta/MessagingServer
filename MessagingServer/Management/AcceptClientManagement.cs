@@ -21,7 +21,7 @@ namespace MessagingServer.Management
 					TcpClient tcpClient = Program.ServerSocket.AcceptTcpClient();
 					if (Program.ServerState == 0)
 					{
-						ConsoleUtilities.PrintCritical("Thread has been ended");
+						ConsoleUtilities.PrintCritical("Thread has been ended {0}", DateTime.UtcNow);
 						return;
 					}
 					if (Program.ServerState == 2)
@@ -91,7 +91,7 @@ namespace MessagingServer.Management
 				}
 				catch (InvalidOperationException e)
 				{
-					ConsoleUtilities.PrintCritical("Accept thread has been terminated");
+					ConsoleUtilities.PrintCritical("Accept thread has been terminated {0}", e.Message);
 					return;
 				}
 				catch (ThreadInterruptedException)

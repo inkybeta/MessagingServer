@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using MessagingServer.Tasks;
@@ -64,7 +65,7 @@ namespace MessagingServer
 				{
 					ServerState = 2;
 					byte[] bytes = Encoding.UTF8.GetBytes("INFOREQ");
-					for (int i = 0; i < 3; i++)
+					for (int i = 0; i < 2; i++)
 					{
 						Socket sendSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 						sendSocket.Connect(IPAddress.Loopback, 2015);
@@ -78,6 +79,36 @@ namespace MessagingServer
 					foreach (IMessagingClient client in Clients.Values)
 					{
 						Console.WriteLine("Username: {0, 15} | Type: {1, 15} | IsOnline: {2, 15}", client.UserName, client.Client.ClientType, client.IsAfk);
+					}
+					ServerThread.ResumeThreads();
+				}
+				if (key == new ConsoleKeyInfo('c', ConsoleKey.C, false, false, false))
+				{
+					ServerState = 2;
+					byte[] bytes = Encoding.UTF8.GetBytes("INFOREQ");
+					for (int i = 0; i < 2; i++)
+					{
+						Socket sendSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+						sendSocket.Connect(IPAddress.Loopback, 2015);
+						sendSocket.SendTo(BitConverter.GetBytes(bytes.Length), 0, 4, SocketFlags.None,
+							new IPEndPoint(IPAddress.Loopback, 2015));
+						sendSocket.SendTo(bytes, 0, bytes.Length, SocketFlags.None, new IPEndPoint(IPAddress.Loopback, 2015));
+						sendSocket.Close();
+					}
+					Thread.Sleep(1000);
+					string command = Console.ReadLine();
+					var parameters = new List<string>();
+					while (true)
+					{
+						string var = Console.ReadLine();
+						if (String.IsNullOrEmpty(var))
+							break;
+						parameters.Add(var);
+					}
+					var pair = new CommandParameterPair(command, parameters.ToArray());
+					foreach (IMessagingClient client in Clients.Values)
+					{
+						client.SendCommand(pair);
 					}
 					ServerThread.ResumeThreads();
 				}
