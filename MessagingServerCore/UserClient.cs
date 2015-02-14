@@ -83,7 +83,7 @@ namespace MessagingServerCore
 				{
 					while (stream.Length != messageLength)
 					{
-						var buffer = new byte[512];
+						var buffer = stream.Length - messageLength > 512 ? new byte[512] : new byte[512 - (messageLength - stream.Length)];
 						int bytesRecieved = Stream.Read(buffer, 0, buffer.Length);
 						stream.Write(buffer, 0, bytesRecieved);
 						if (!CheckIfConnected())

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using MessagingServer.Models;
 using MessagingServer.Utilities;
@@ -128,6 +129,10 @@ namespace MessagingServer.Management
 					return;
 				}
 				CommandParameterPair message = MessageUtilites.DecodeMessage(smessage);
+				var builder = new StringBuilder();
+				foreach (string i in message.Parameters)
+					builder.Append(String.Format("{0} with", i));
+				ConsoleUtilities.PrintCommand(String.Format("{0} has sent command {1} with parameters {2}", client.Guid, message.Command, builder));
 				InitializeCommand execute;
 				if (Program.InitializeCommands.TryGetValue(message.Command, out execute))
 				{
@@ -140,6 +145,15 @@ namespace MessagingServer.Management
 				}
 			}
 			catch (SocketException e)
+			{
+				if (client.Client.Client.RemoteEndPoint == null)
+				{
+					Console.WriteLine("A severe error has occurred with the clientStream. Data: {0}", e.Data);
+					return;
+				}
+				Console.WriteLine("Error: A clientStream has disconnected from {0}. ", (client.Client.Client.RemoteEndPoint as IPEndPoint).Address);
+			}
+			catch (IOException e)
 			{
 				if (client.Client.Client.RemoteEndPoint == null)
 				{

@@ -76,7 +76,7 @@ namespace MessagingServer.Utilities
 
 			using (var stream = new MemoryStream())
 			{
-				var buffer = new byte[512];
+				var buffer = stream.Length - messageLength > 512 ? new byte[512] : new byte[512 - (messageLength - stream.Length)];
 				while (stream.Length != messageLength)
 				{
 					var bytesRecieved = clientSocket.Read(buffer, 0, buffer.Length);
